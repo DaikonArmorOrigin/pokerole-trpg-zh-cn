@@ -10,3 +10,6 @@
 *.ico binary
 *.woff binary
 *.woff2 binary
+
+# 批处理必须是 CRLF，否则 cmd 里 goto :label 会失效
+*.bat text eol=crlf

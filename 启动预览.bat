@@ -3,7 +3,7 @@ rem ============================================================
 rem  Pokemon TRPG rulebook -- local preview launcher
 rem
 rem  Double-click this file:
-rem    - starts a tiny local web server (serve.py)
+rem    - starts a tiny local web server (_dev/serve.py)
 rem    - opens the rulebook in your default browser
 rem  Close the black window (or press Ctrl+C) to stop it.
 rem
@@ -16,13 +16,13 @@ cd /d "%~dp0"
 
 where python >nul 2>nul
 if not errorlevel 1 (
-    python "%~dp0serve.py" %*
+    python "%~dp0_dev\serve.py" %*
     goto :done
 )
 
 where py >nul 2>nul
 if not errorlevel 1 (
-    py -3 "%~dp0serve.py" %*
+    py -3 "%~dp0_dev\serve.py" %*
     goto :done
 )
 

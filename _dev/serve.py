@@ -11,9 +11,9 @@ serve.py —— 本地预览服务器（只用 Python 标准库，不联网、�
   解决办法只有一个：用 http:// 打开，也就是起一个本地小服务器。
 
 【怎么用】
-  方式一（推荐）：双击同目录下的「启动预览.bat」
-  方式二：在项目目录里执行  python serve.py
-          想换端口：python serve.py 8080
+  方式一（推荐）：双击项目根目录下的「启动预览.bat」
+  方式二：在任意目录执行  python _dev/serve.py
+          想换端口：python _dev/serve.py 8080
   浏览器会自动打开；关掉这个窗口（或按 Ctrl+C）就是停止服务。
 
 【它比 python -m http.server 多做的一点事】
@@ -29,7 +29,8 @@ import sys
 import threading
 import webbrowser
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+# 本脚本在 _dev/ 里，往上一层才是网站根目录
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIRST_PORT = 8000
 MAX_TRIES = 20
 
