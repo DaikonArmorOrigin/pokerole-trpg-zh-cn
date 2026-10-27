@@ -79,7 +79,20 @@ def main():
 
     if not os.path.isdir(os.path.join(ROOT, '.git')):
         print('  [X] 这个目录不是 git 仓库，没法发布。')
+        print('')
+        print('      如果你是从 GitHub 点「Download ZIP」下载的，压缩包里不含 .git 目录，')
+        print('      所以只能阅读、不能发布——这是正常的。')
+        print('      想参与翻译，请先 Fork 或 Clone 到你自己的账号下再动手。')
         return 1
+
+    # 远程仓库：没配置就早点说，否则 push 的报错看不懂
+    remote = git('remote', 'get-url', 'origin')
+    if remote.returncode != 0:
+        print('  [X] 没有配置远程仓库 origin，不知道要发到哪里。')
+        print('      在项目目录执行：git remote add origin <你的仓库地址>')
+        return 1
+    print('  目标仓库：%s' % remote.stdout.strip())
+    print('')
 
     # core.quotepath=false：让中文文件名原样显示，而不是 \344\270\255 这种转义
     status = git('-c', 'core.quotepath=false', 'status', '--porcelain')
