@@ -1,0 +1,2302 @@
+/* ============================================================
+ * theme.css — 宝可梦 TRPG 规则书 视觉主题
+ *
+ * 目录：
+ *   1  全局变量与顶部栏        2  侧边栏
+ *   3  正文卡片与标题          4  面包屑 / 翻页 / 页脚
+ *   5  卡片（tip / rule / 叙事者 / 训练家贴士）
+ *   6  折叠块 / 译注           7  属性圆点与属性格
+ *   8  表格                    9  插图
+ *  10  行内图标（威力 / 时钟 / 骰池 / 动作类型）
+ *  11  页内目录（右侧 TOC）
+ *  12  移动端与打印
+ * ============================================================ */
+
+/* ---------- 1. 全局宝可梦主题色 ---------- */
+:root {
+    --poke-red: #e3350d;
+    --poke-dark: #b3252a;
+    --poke-blue: #30a7d7;
+    --poke-red-light: #fef2f2;
+    --content-bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --text-main: #374151;
+    --text-title: #1f2937;
+    --border-color: #e5e7eb;
+    --sidebar-search-h: 58px;   /* 侧栏顶部搜索按钮占位，侧栏目录高度要减掉它 */
+}
+
+.custom-header {
+    background: var(--poke-red);
+    color: white;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    gap: 12px;
+    padding-top: env(safe-area-inset-top);
+    height: calc(64px + env(safe-area-inset-top));
+    min-height: 64px;
+}
+
+body {
+    padding-top: calc(64px + env(safe-area-inset-top)) !important;
+}
+
+.custom-header .menu-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.custom-header .menu-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.custom-header .menu-btn svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* ---------- 精灵球 Logo（修复中心点 + 呼吸动画） ---------- */
+.poke-ball {
+    box-sizing: border-box;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    overflow: hidden;
+    background: white;
+    position: relative;
+    flex-shrink: 0;
+    animation: ballFloat 3s ease-in-out infinite;
+}
+
+.poke-ball .top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: var(--poke-red);
+}
+
+.poke-ball .divider {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #333;
+    transform: translateY(-50%);
+}
+
+.poke-ball .center-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+@keyframes ballFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.custom-header .title-group {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+}
+
+.custom-header .title-group h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin: 0;
+    color: white;
+    white-space: nowrap;
+}
+
+.custom-header .title-group small {
+    font-size: 0.65rem;
+    opacity: 0.8;
+    color: white;
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .custom-header .title-group small {
+        display: block;
+    }
+}
+
+/* ---------- 侧边栏调整 ---------- */
+.sidebar {
+    top: calc(64px + env(safe-area-inset-top)) !important;
+    padding-top: 0 !important;
+    background: white !important;
+    border-right: 1px solid var(--border-color) !important;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04) !important;
+    /* 必须高于移动端遮罩（89），否则抽屉一打开就被自己的遮罩盖住 */
+    z-index: 95 !important;
+}
+
+/* 抽屉打开时右下角按钮让位 */
+body.sidebar-open .dex-fab { display: none; }
+
+.sidebar-nav {
+    padding: 16px 8px 80px 8px !important;
+    height: calc(100vh - 64px - var(--sidebar-search-h) - env(safe-area-inset-top)) !important;
+    overflow-y: auto !important;
+}
+
+/* 目录比屏幕高时，底部留一道白雾，暗示下面还有条目 */
+.sidebar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 26px;
+    background: linear-gradient(to top, #fff 35%, rgba(255, 255, 255, 0));
+    pointer-events: none;
+}
+
+/* 侧栏顶部的搜索入口：点了唤起全屏搜索浮层，不再是第二个输入框 */
+.sidebar-search-trigger {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: none;
+    width: calc(100% - 28px);
+    height: 38px;
+    margin: 14px 14px 6px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-family: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sidebar-search-trigger svg {
+    width: 17px;
+    height: 17px;
+    flex: none;
+}
+
+.sidebar-search-trigger:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.sidebar-search-trigger:focus-visible {
+    outline: 3px solid var(--poke-blue);
+    outline-offset: 2px;
+}
+
+.app-name-link,
+.sidebar-nav .app-name {
+    display: none !important;
+}
+
+/* ---------- 移动端抽屉 ---------- */
+@media (max-width: 768px) {
+    .sidebar {
+        /* docsify 给收起状态的侧栏留了 left: -300px，
+           只改 transform 是拉不回来的，必须把 left 也归零 */
+        left: 0 !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        width: 280px !important;
+        top: calc(64px + env(safe-area-inset-top)) !important;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 89;
+        top: calc(64px + env(safe-area-inset-top));
+        display: none;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+}
+
+@media (min-width: 769px) {
+    .sidebar {
+        transform: translateX(0) !important;
+    }
+
+    .sidebar-overlay {
+        display: none !important;
+    }
+
+    .custom-header .menu-btn {
+        display: none !important;
+    }
+}
+
+/* ---------- 侧边栏目录样式 ---------- */
+.sidebar-nav a {
+    display: block;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: #4b5563;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-nav a:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+.sidebar-nav a.active {
+    background: var(--poke-red-light);
+    color: var(--poke-red);
+    font-weight: 600;
+    border-left-color: var(--poke-red);
+}
+
+.sidebar-nav > ul > li > p,
+.sidebar-nav > ul > li > a:first-child,
+.sidebar-nav > ul > li > strong {
+    font-weight: 700;
+    color: var(--text-title);
+    font-size: 0.95rem;
+    margin-top: 12px;
+    padding: 6px 14px;
+    border-left: none;
+}
+
+/* 单章条目写成 - **[🏛️ 引言](x.md)**，docsify 渲染成
+   <li class="file"><strong><a>（不会包 <p>）。
+   把 strong 自带的内边距清掉，整行交给里面的 <a> 负责——
+   否则每行会被撑到 60px 高，13 章排下来能顶满两屏。 */
+.sidebar-nav > ul > li > strong,
+.sidebar-nav > ul > li > p {
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-nav > ul > li > strong > a,
+.sidebar-nav > ul > li > p > a {
+    display: block;
+}
+
+/* 分组标题（🎲 快速参考 / 📎 附录）没有链接，保留缩进和上间距 */
+.sidebar-nav > ul > li > strong:not(:has(a)),
+.sidebar-nav > ul > li > p:not(:has(a)) {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 14px 4px;
+}
+
+.sidebar-nav ul ul {
+    padding-left: 12px;
+}
+
+/* ---------- 内容区背景与卡片 ---------- */
+.content {
+    background: var(--content-bg) !important;
+    padding-top: 1rem !important;
+}
+
+.markdown-section {
+    max-width: 820px !important;
+    margin: 0 auto !important;
+    padding: 20px 24px 60px !important;
+    line-height: 1.8;
+    color: var(--text-main);
+    font-size: 1rem;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    min-height: 300px;
+
+    /* 中文正文的字体栈：英文用系统 UI 字体，汉字回落到各平台的
+       黑体（苹方 / 微软雅黑 / 思源黑体），三端观感才一致 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+                 "Source Han Sans SC", "Noto Sans CJK SC", sans-serif;
+
+    /* 关掉滚动锚定：翻页时浏览器会"记住"原来的滚动位置，
+       导致新章节停在半截。关掉它，回到顶部才真正回得去 */
+    overflow-anchor: none;
+}
+
+/* ---------- 标题样式优化 ---------- */
+/* H1：红色加下划线（章节主标题） */
+.markdown-section h1 {
+    color: var(--poke-red, #e3350d);
+    font-size: 1.8rem;
+    font-weight: 700;
+    border-bottom: 4px solid var(--poke-red, #e3350d);
+    padding-bottom: 0.4rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* H2：纯红色文字，无下划线 */
+.markdown-section h2 {
+    color: var(--poke-red, #e3350d);
+    border-bottom: none !important;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-top: 1.8rem;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0;
+}
+
+/* H3：左侧红色装饰条 */
+.markdown-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-title);
+    margin-top: 1.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.markdown-section h3::before {
+    content: "";
+    display: block;
+    width: 8px;
+    height: 1.2em;
+    min-height: 18px;
+    background: var(--poke-red, #e3350d);
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+/* ---------- 其他内容样式 ---------- */
+.markdown-section p {
+    margin-bottom: 0.9rem;
+}
+
+.markdown-section ul,
+.markdown-section ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.9rem;
+}
+
+.markdown-section li {
+    margin-bottom: 0.3rem;
+}
+
+.markdown-section table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.markdown-section th,
+.markdown-section td {
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+}
+
+.markdown-section th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.markdown-section tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.markdown-section blockquote {
+    border-left: 4px solid var(--poke-red);
+    background: var(--poke-red-light);
+    padding: 0.6rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 0.5rem 0.5rem 0;
+    color: #4b5563;
+    font-size: 0.95rem;
+}
+
+.markdown-section blockquote p {
+    margin-bottom: 0;
+}
+
+.markdown-section strong {
+    color: var(--text-title);
+    font-weight: 600;
+}
+
+.markdown-section a {
+    color: var(--poke-red);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+}
+
+.markdown-section a:hover {
+    border-bottom-color: var(--poke-red);
+}
+
+.markdown-section img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+}
+
+.markdown-section code {
+    background: #f3f4f6;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--poke-red);
+}
+
+.markdown-section pre {
+    background: #1f2937;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.markdown-section pre code {
+    background: transparent;
+    color: #e5e7eb;
+    padding: 0;
+}
+
+/* ---------- 面包屑 ---------- */
+.custom-breadcrumb {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.custom-breadcrumb span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.custom-breadcrumb .parent {
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.custom-breadcrumb .sep {
+    color: #d1d5db;
+}
+
+.custom-breadcrumb .current {
+    color: var(--poke-red);
+    font-weight: 500;
+}
+
+/* ---------- 上下页导航按钮 ---------- */
+.custom-nav {
+    max-width: 820px;
+    margin: 2rem auto 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.custom-nav button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    color: #4b5563;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.custom-nav button:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.custom-nav button:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: default;
+}
+
+.custom-nav .btn-next {
+    background: var(--poke-red);
+    color: white;
+    border-color: var(--poke-red);
+}
+
+.custom-nav .btn-next:hover:not(:disabled) {
+    background: var(--poke-dark);
+    border-color: var(--poke-dark);
+}
+
+.custom-nav .btn-next:disabled {
+    opacity: 0.5;
+    background: var(--poke-red);
+}
+
+.custom-nav svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* ---------- 页脚 ---------- */
+.custom-footer {
+    max-width: 820px;
+    margin: 0 auto 0 auto;
+    padding: 1.5rem 24px 2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+/* 侧栏搜索框的旧样式已随 docsify 搜索插件一并移除，
+   现在的入口是 .sidebar-search-trigger（见上方侧栏部分） */
+
+/* ---------- 响应式微调 ---------- */
+@media (max-width: 640px) {
+    .content .markdown-section {
+        padding: 1.2rem 1.2rem !important;
+        border-radius: 12px;
+    }
+
+    .custom-header .title-group h1 {
+        font-size: 0.95rem;
+    }
+
+    .custom-breadcrumb {
+        font-size: 0.75rem;
+    }
+
+    .custom-nav {
+        padding: 1rem 16px 0;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .custom-nav button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.9rem;
+    }
+}
+
+/* ===== 彩色属性网格（宝可梦官方色） ===== */
+.type-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin: 24px 0 32px 0;
+}
+
+.type-item {
+    border-radius: 16px;
+    padding: 14px 4px 12px 4px;
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    cursor: default;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.type-item:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.type-item .zh {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.type-item .en {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    margin-top: 2px;
+}
+
+/* 浅色属性用深色文字 */
+.type-item.type-normal .zh,
+.type-item.type-electric .zh,
+.type-item.type-ground .zh,
+.type-item.type-steel .zh,
+.type-item.type-fairy .zh,
+.type-item.type-ice .zh {
+    color: #1f2937;
+    text-shadow: none;
+}
+.type-item.type-normal .en,
+.type-item.type-electric .en,
+.type-item.type-ground .en,
+.type-item.type-steel .en,
+.type-item.type-fairy .en,
+.type-item.type-ice .en {
+    color: #4b5563;
+    text-shadow: none;
+}
+
+/* 18 种属性背景色 */
+.type-normal   { background: #A8A77A; }
+.type-bug      { background: #A6B91A; }
+.type-dark     { background: #705746; }
+.type-dragon   { background: #6F35FC; }
+.type-electric { background: #F7D02C; }
+.type-fairy    { background: #D685AD; }
+.type-fight    { background: #C22E28; }
+.type-fire     { background: #EE8130; }
+.type-flying   { background: #A98FF3; }
+.type-ghost    { background: #735797; }
+.type-grass    { background: #7AC74C; }
+.type-ground   { background: #E2BF65; }
+.type-ice      { background: #96D9D6; }
+.type-poison   { background: #A33EA1; }
+.type-psychic  { background: #F95587; }
+.type-rock     { background: #B6A136; }
+.type-steel    { background: #B7B7CE; }
+.type-water    { background: #6390F0; }
+
+@media (max-width: 600px) {
+    .type-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .type-item { padding: 10px 2px; }
+    .type-item .zh { font-size: 1rem; }
+}
+
+/* ===== 引导提示卡 ===== */
+.tip-card {
+    background: #faf9f7;
+    border-left: 8px solid var(--poke-red, #e3350d);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 28px 16px 28px;
+    margin: 28px 0 32px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s;
+}
+.tip-card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+.tip-card .tip-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.tip-card .tip-title::before {
+    content: "📖";
+    font-size: 1.3rem;
+}
+.tip-card p {
+    margin-bottom: 8px;
+    color: #4b5563;
+    font-size: 0.98rem;
+    line-height: 1.7;
+}
+.tip-card p:last-child {
+    margin-bottom: 0;
+}
+.tip-card a {
+    color: var(--poke-red, #e3350d);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.15s;
+}
+.tip-card a:hover {
+    border-bottom-color: var(--poke-red, #e3350d);
+}
+
+/* ===== 重要规则卡 ===== */
+.rule-card {
+    background: #fffbeb;
+    border-left: 8px solid #f59e0b;
+    border-radius: 0 12px 12px 0;
+    padding: 16px 24px;
+    margin: 20px 0;
+    box-shadow: 0 1px 4px rgba(245, 158, 11, 0.1);
+}
+.rule-card .rule-title {
+    font-weight: 700;
+    color: #92400e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.rule-card .rule-title::before {
+    content: "⚠️";
+    font-size: 1.1rem;
+}
+.rule-card p {
+    color: #78350f;
+    margin-bottom: 4px;
+}
+
+/* ===== 叙事者笔记（GM） ===== */
+.storyteller-note {
+    background: #f4f3ff;
+    border-left: 8px solid #4f46e5;
+    border-radius: 0 16px 16px 0;
+    padding: 24px 28px 20px 28px;
+    margin: 28px 0 32px 0;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.06);
+    transition: box-shadow 0.25s;
+}
+.storyteller-note:hover {
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.10);
+}
+.storyteller-note .note-label {
+    display: inline-block;
+    background: #4f46e5;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 3px 18px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+}
+.storyteller-note p {
+    margin-bottom: 6px;
+    color: #1e1b4b;
+    font-size: 0.98rem;
+    line-height: 1.7;
+}
+.storyteller-note p:last-child {
+    margin-bottom: 0;
+}
+.storyteller-note strong {
+    color: #4f46e5;
+    font-weight: 700;
+}
+
+/* ===== 训练家提示 ===== */
+.trainer-tip {
+    background: #ecfdf5;
+    border-left: 8px solid #10b981;
+    border-radius: 0 16px 16px 0;
+    padding: 24px 28px 20px 28px;
+    margin: 28px 0 32px 0;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.06);
+    transition: box-shadow 0.25s;
+}
+.trainer-tip:hover {
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12);
+}
+.trainer-tip .tip-label {
+    display: inline-block;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 3px 18px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+.trainer-tip p {
+    margin-bottom: 6px;
+    color: #065f46;
+    font-size: 0.98rem;
+    line-height: 1.7;
+}   
+.trainer-tip p:last-child {
+    margin-bottom: 0;
+}
+.trainer-tip strong {
+    color: #059669;
+    font-weight: 700;
+}
+
+/* ===== 属性悬停提示框（工具提示） ===== */
+.type-tooltip {
+    position: fixed;
+    padding: 16px 20px;
+    background: #1f2937;
+    color: #f3f4f6;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    max-width: 280px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.type-tooltip.visible {
+    opacity: 1;
+}
+.type-tooltip .tt-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+}
+.type-tooltip .tt-row {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    margin-top: 6px;
+}
+.type-tooltip .tt-label {
+    font-weight: 600;
+    font-size: 0.8rem;
+    min-width: 44px;
+}
+.type-tooltip .tt-strong .tt-label {
+    color: #4ade80;
+}
+.type-tooltip .tt-weak .tt-label {
+    color: #f87171;
+}
+/* ⭐ 免疫标签（灰色） */
+.type-tooltip .tt-immunity .tt-label {
+    color: #d1d5db;
+}
+.type-tooltip .tt-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.type-tooltip .tt-tag {
+    background: rgba(255, 255, 255, 0.12);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: #e5e7eb;
+    font-weight: 500;
+}
+/* ⭐ 免疫标签专属样式（更淡） */
+.type-tooltip .tt-tag.immunity {
+    background: rgba(255, 255, 255, 0.06);
+    color: #9ca3af;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.type-tooltip .tt-empty {
+    color: #9ca3af;
+    font-size: 0.8rem;
+        }
+
+/* ============ 以下为原 index.html 第二个 <style> 块（原在 body 内） ============ */
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+/* ===== 可折叠插页面板（长内容专用） ===== */
+.collapsible-insert {
+    background: #faf9f7;
+    border-left: 6px solid #4b5563;
+    border-right: 6px solid #4b5563;
+    border-radius: 4px;
+    margin: 28px 0 32px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.25s;
+    overflow: hidden;
+}
+.collapsible-insert:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* 可点击的标题栏 */
+.collapsible-insert .insert-header {
+    padding: 18px 28px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: background 0.15s;
+    border-bottom: 1px solid transparent;
+}
+.collapsible-insert .insert-header:hover {
+    background: rgba(75, 85, 99, 0.04);
+}
+
+.collapsible-insert .insert-header .insert-badge {
+    display: inline-block;
+    background: #4b5563;
+    color: #ffffff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 2px 14px;
+    border-radius: 4px;
+    font-family: "Courier New", monospace;
+    flex-shrink: 0;
+}
+
+.collapsible-insert .insert-header .insert-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1f2937;
+    flex: 1;
+}
+
+/* 展开/收起箭头（纯CSS画出来） */
+.collapsible-insert .insert-header .arrow {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.collapsible-insert .insert-header .arrow svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* 展开状态：箭头旋转180度 */
+.collapsible-insert.open .insert-header .arrow {
+    transform: rotate(180deg);
+}
+
+/* 展开状态：标题栏下边框出现（视觉分隔） */
+.collapsible-insert.open .insert-header {
+    border-bottom-color: #e5e7eb;
+}
+
+/* ===== 插页内容区域（默认折叠） ===== */
+.collapsible-insert .insert-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.3s ease;
+    padding: 0 28px;
+}
+
+/* 展开状态 */
+.collapsible-insert.open .insert-body {
+    max-height: 3000px;          /* 足够容纳你的规则集 */
+    padding: 0 28px 28px 28px;
+}
+
+/* 内容样式 */
+.collapsible-insert .insert-body p {
+    margin-bottom: 6px;
+    color: #374151;
+    font-size: 0.95rem;
+    line-height: 1.75;
+}
+.collapsible-insert .insert-body p:last-child {
+    margin-bottom: 0;
+}
+
+.collapsible-insert .insert-body strong {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.collapsible-insert .insert-body ul {
+    padding-left: 1.8rem;
+    margin: 6px 0 8px 0;
+}
+.collapsible-insert .insert-body li {
+    margin-bottom: 4px;
+    color: #374151;
+    font-size: 0.93rem;
+    line-height: 1.6;
+}
+
+.collapsible-insert .insert-body .sub-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #e5e7eb;
+}
+.collapsible-insert .insert-body .sub-section:first-of-type {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+}
+.collapsible-insert .insert-body .sub-section-title {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 0.98rem;
+    margin-bottom: 4px;
+}
+
+/* 手机适配 */
+@media (max-width: 600px) {
+    .collapsible-insert .insert-header {
+        padding: 14px 16px;
+        flex-wrap: wrap;
+    }
+    .collapsible-insert .insert-header .insert-title {
+        font-size: 0.95rem;
+        order: 2;
+        flex-basis: 100%;
+    }
+    .collapsible-insert .insert-header .insert-badge {
+        order: 1;
+    }
+    .collapsible-insert .insert-header .arrow {
+        order: 3;
+        margin-left: auto;
+    }
+    .collapsible-insert.open .insert-body {
+        padding: 0 16px 18px 16px;
+    }
+    .collapsible-insert .insert-body ul {
+        padding-left: 1.2rem;
+    }
+}
+/* ===== 插页底部的“官方小字脚注” ===== */
+.insert-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;   /* 淡灰色分割线，和正文区分开 */
+    font-size: 0.7rem;               /* 小字号：约为正文的 70% */
+    color: #9ca3af;                  /* 柔和灰，不抢眼 */
+    line-height: 1.6;
+    text-align: center;              /* 居中排列，像官方落款 */
+    font-style: italic;              /* 斜体，更显“附注”感 */
+    letter-spacing: 0.3px;
+}
+
+/* 如果脚注里需要特殊强调（比如电话号码） */
+.insert-footer strong {
+    color: #6b7280;
+    font-weight: 600;
+    font-style: normal;              /* 强调部分取消斜体，稍微突出一点 */
+}
+
+/* 手机端微调 */
+@media (max-width: 600px) {
+    .insert-footer {
+        font-size: 0.6rem;
+        padding-top: 12px;
+        margin-top: 16px;
+    }
+}
+/* ===== 属性圆点显示 ===== */
+.attribute-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    font-weight: 400;
+
+    /* ● 和 ○ 是「字符」不是图形，不同字体的画法差别很大：
+       Segoe UI / 微软雅黑的 ○ 会比 ● 大出将近一倍。
+       这里固定用 Arial 系（各平台度量一致），保证实心与空心一样大。 */
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+.attr-filled {
+    color: #1f2937;
+}
+.attr-available {
+    color: #e3350d;
+}
+.attr-empty {
+    color: #d1d5db;
+}
+/* ===== 可折叠译注（术语考证·默认收起） ===== */
+.translator-note {
+    background: #fff7ed;
+    border-left: 6px solid #f97316;
+    border-radius: 0 12px 12px 0;
+    margin: 20px 0 24px 0;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.06);
+    transition: box-shadow 0.2s;
+    overflow: hidden;
+}
+.translator-note:hover {
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.10);
+}
+
+/* 折叠标题（点击区域） */
+.translator-note summary {
+    padding: 14px 22px 14px 22px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #9a3412;
+    list-style: none;               /* 去掉默认的三角箭头 */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    transition: background 0.15s;
+    border-radius: 0 12px 0 0;
+}
+.translator-note summary:hover {
+    background: rgba(249, 115, 22, 0.04);
+}
+/* 自定义折叠指示器（+ / - 号） */
+.translator-note summary::before {
+    content: "▶";
+    font-size: 0.7rem;
+    color: #ea580c;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.translator-note[open] summary::before {
+    transform: rotate(90deg);
+}
+
+/* 标签（“译注”徽章） */
+.translator-note summary .badge {
+    background: #ffedd5;
+    border: 1px solid #fed7aa;
+    color: #ea580c;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    padding: 1px 12px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+/* 提示文字（译注标题）——紧跟在徽章后面，
+   原来用 margin-left:auto 靠右，会孤零零地飘在整条卡片的最右端，
+   和左边的"译注"徽章离得太远，看着像两个不相干的标签。 */
+.translator-note summary .hint {
+    font-weight: 400;
+    font-size: 0.7rem;
+    color: #b45309;
+    opacity: 0.6;
+}
+
+/* 展开后的内容区域 */
+.translator-note .note-body {
+    padding: 0 22px 16px 22px;
+    color: #7c2d12;
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+.translator-note .note-body strong {
+    color: #9a3412;
+    font-weight: 700;
+}
+
+/* ============================================================
+   修正补丁 & 新增组件（v2）
+   说明：上方为原样式原样保留；以下是审查后新增/覆盖的部分
+   ============================================================ */
+
+/* ---------- 1. 交互修正 ---------- */
+/* 【重要】docsify 会把标题文字包成 <a class="anchor"><span>…</span></a>，
+   而 vue.css 里有 `.anchor span { color: #34495e }`，
+   优先级高于继承，导致 H1/H2 设定的红色永远显示成深蓝灰。
+   这一行让标题内文字重新继承标题自身的颜色。 */
+.markdown-section .anchor span { color: inherit; }
+
+/* 属性卡在手机上可点，光标应提示可点 */
+.type-item { cursor: pointer; }
+.type-item:focus-visible {
+    outline: 3px solid #1f2937;
+    outline-offset: 3px;
+}
+/* 搜索输入框不用鼠标焦点环，但仍保留键盘焦点提示 */
+.search-field input:focus-visible {
+    outline: none;
+}
+.search-field:focus-within {
+    border-bottom-color: rgba(227, 53, 13, 0.45);
+}
+/* 键盘焦点统一可见（按钮、链接） */
+.custom-nav button:focus-visible,
+.menu-btn:focus-visible,
+.dex-fab:focus-visible,
+.search-panel button:focus-visible {
+    outline: 3px solid #30a7d7;
+    outline-offset: 2px;
+}
+
+/* 移动端地址栏收起时用 dvh，避免侧边栏底部被截断 */
+@supports (height: 100dvh) {
+    .sidebar-nav {
+        height: calc(100dvh - 64px - var(--sidebar-search-h) - env(safe-area-inset-top)) !important;
+    }
+}
+
+/* Safari 的毛玻璃需要前缀 */
+.type-tooltip { -webkit-backdrop-filter: blur(8px); }
+
+/* ---------- 2. 跳转到正文（无障碍） ---------- */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 10000;
+    background: #1f2937;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 0 0 8px 0;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+.skip-link:focus {
+    left: 0;
+}
+
+/* ---------- 3. 图鉴按钮（唤起全屏搜索） ---------- */
+.dex-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999;
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    border: 2px solid #fff;
+    background: var(--poke-red);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(227, 53, 13, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    padding: 0;
+}
+.dex-fab svg { width: 34px; height: 34px; }
+.dex-fab:hover {
+    transform: scale(1.06);
+    box-shadow: 0 10px 28px rgba(227, 53, 13, 0.5);
+}
+.dex-fab:active { transform: scale(0.96); }
+
+/* ---------- 4. 全屏搜索浮层 ---------- */
+.search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 9vh 20px 20px;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+.search-overlay[hidden] { display: none; }
+body.search-open { overflow: hidden; }
+
+.search-panel {
+    width: 100%;
+    max-width: 680px;
+    max-height: 78vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    animation: popIn 0.18s ease-out;
+}
+
+.search-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex: none;
+}
+.search-field > svg {
+    width: 20px;
+    height: 20px;
+    color: #9ca3af;
+    flex: none;
+}
+.search-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: 1.05rem;
+    color: var(--text-title);
+}
+.search-field input::placeholder { color: #b6bcc6; }
+.search-close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    background: #f9fafb;
+    color: #6b7280;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.search-close svg { width: 15px; height: 15px; }
+.search-close:hover { background: #f3f4f6; color: #374151; }
+
+.search-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    min-height: 232px;   /* 空状态时面板不会缩成一条，视觉上更稳 */
+    overscroll-behavior: contain;
+}
+.search-hint {
+    margin: 0;
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #9ca3af;
+    line-height: 1.8;
+}
+
+/* 首次建立索引时的等待态：文字呼吸，不依赖 content 动画（Firefox 不支持） */
+.search-hint.is-loading {
+    animation: searchPulse 1.4s ease-in-out infinite;
+}
+@keyframes searchPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.45; }
+}
+
+/* 结果计数 */
+.search-meta {
+    padding: 6px 12px 4px;
+    font-size: 0.78rem;
+    color: #9ca3af;
+}
+.search-meta b {
+    color: var(--poke-red);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 空状态的示例词 */
+.search-suggests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 0 24px 8px;
+}
+.search-suggests button {
+    padding: 6px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: #fff;
+    color: #4b5563;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.search-suggests button:hover {
+    border-color: var(--poke-red);
+    background: var(--poke-red-light);
+    color: var(--poke-red);
+}
+
+.search-item {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+.search-item:hover,
+.search-item.is-active { background: var(--poke-red-light); }
+.search-item .si-top {
+    font-size: 0.76rem;
+    color: #9ca3af;
+    margin-bottom: 2px;
+}
+.search-item .si-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-title);
+    margin-bottom: 3px;
+}
+.search-item .si-snippet {
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: #6b7280;
+    overflow-wrap: break-word;
+}
+.search-item mark {
+    background: #fde68a;
+    color: #78350f;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+.search-foot {
+    flex: none;
+    display: flex;
+    gap: 16px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border-color);
+    background: #fafbfc;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+.search-foot kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid #d1d5db;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 0.72rem;
+    color: #4b5563;
+}
+
+/* ---------- 5. 快速掷骰（快速参考页） ---------- */
+.dice-roller {
+    margin: 1.5rem 0;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.dr-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.dr-label { font-weight: 700; color: var(--text-title); }
+.dr-step {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #4b5563;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+}
+.dr-step:hover { background: #f3f4f6; }
+.dr-count {
+    width: 68px;
+    height: 34px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-title);
+    -moz-appearance: textfield;
+}
+.dr-count::-webkit-outer-spin-button,
+.dr-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.dr-roll {
+    margin-left: auto;
+    height: 38px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--poke-red);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(227, 53, 13, 0.25);
+    transition: background 0.15s;
+}
+.dr-roll:hover { background: var(--poke-dark); }
+.dr-roll:active { transform: translateY(1px); }
+
+.dr-output { margin-top: 16px; }
+.dr-idle { margin: 0; font-size: 0.9rem; color: #9ca3af; }
+.dr-dice { display: flex; flex-wrap: wrap; gap: 8px; }
+.dr-die {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 1.15rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.dr-die.is-success {
+    background: var(--poke-red-light);
+    border-color: rgba(227, 53, 13, 0.35);
+    color: var(--poke-red);
+}
+.dr-summary {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+    font-size: 0.9rem;
+    color: #4b5563;
+}
+.dr-summary b {
+    font-size: 1.3rem;
+    color: var(--poke-red);
+    font-variant-numeric: tabular-nums;
+}
+.dr-summary .dr-total { color: #9ca3af; }
+
+@media (max-width: 520px) {
+    .search-overlay { padding: 4vh 12px 12px; }
+    .search-panel { max-height: 86vh; }
+    .search-foot { display: none; }
+    .dr-roll { margin-left: 0; width: 100%; }
+
+    /* 手机上按钮别顶到屏幕边缘，也别挡住正文最后一行 */
+    .dex-fab {
+        width: 54px;
+        height: 54px;
+        right: 18px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
+        border-radius: 16px;
+    }
+    .dex-fab svg { width: 26px; height: 26px; }
+    .markdown-section { padding-bottom: 92px !important; }
+}
+
+/* 页脚不被右下角按钮压住 */
+.content { padding-bottom: 28px !important; }
+@media (max-width: 900px) {
+    .content { padding-bottom: 76px !important; }
+}
+
+/* ---------- 4. 尊重系统的"减少动效"设置 ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .poke-ball { animation: none; }
+}
+
+/* ---------- 6. 打印 / 导出 PDF ---------- */
+@media print {
+    .custom-header,
+    .sidebar,
+    .sidebar-overlay,
+    .custom-nav,
+    .dex-fab,
+    .search-overlay,
+    .skip-link,
+    .search,
+    .type-tooltip,
+    .collapsible-insert .insert-header .arrow,
+    .translator-note summary .hint {
+        display: none !important;
+    }
+    body { padding-top: 0 !important; background: #fff !important; }
+    .content { background: #fff !important; padding: 0 !important; }
+    .markdown-section {
+        max-width: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        font-size: 11pt;
+        color: #000;
+    }
+    .custom-footer { display: block !important; padding: 12px 0 0; }
+    /* 打印时展开所有折叠块，否则内容会丢 */
+    .collapsible-insert .insert-body { max-height: none !important; padding: 0 28px 12px !important; }
+    details.translator-note[open] .note-body { display: block; }
+    .markdown-section h1, .markdown-section h2 { color: #000 !important; }
+    .markdown-section h1 { border-bottom: 2px solid #000; }
+    .markdown-section h3::before { background: #000; }
+    .markdown-section a { color: #000 !important; text-decoration: underline; }
+    .markdown-section table { page-break-inside: auto; }
+    .markdown-section tr { page-break-inside: avoid; }
+    .markdown-section h1, .markdown-section h2, .markdown-section h3 { page-break-after: avoid; }
+    .type-item {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        box-shadow: none;
+    }
+    @page { margin: 16mm 14mm; }
+}
+
+/* ---------- 6. 侧栏搜索入口 ----------
+   侧栏顶部原本是 docsify 搜索插件的输入框，现在换成唤起全屏搜索的
+   按钮（.sidebar-search-trigger，样式定义见文件上方侧栏部分）。 */
+
+/* 项目已在顶部栏自带菜单按钮，隐藏 docsify 默认的浮动侧栏按钮 */
+.sidebar-toggle { display: none !important; }
+
+/* ---------- 7. 侧边栏"当前页"高亮 ----------
+   docsify 把 active 类加在 <li> 上（class="active open file"），
+   原样式写在 a 上，所以红色高亮从未生效，一直是 vue.css 的绿色。
+   下面同时覆盖 a 与 li 两种写法，并压过 .app-sub-sidebar .active > a */
+.sidebar-nav li.active > a,
+.sidebar-nav li.active > strong > a,
+.sidebar-nav li.active > p,
+.sidebar-nav a.active {
+    background: var(--poke-red-light);
+    color: var(--poke-red);
+    font-weight: 600;
+    border-left-color: var(--poke-red);
+}
+.sidebar-nav li.active > a:hover,
+.sidebar-nav li.active > strong > a:hover,
+.sidebar-nav a.active:hover {
+    background: var(--poke-red-light);
+    color: var(--poke-red);
+}
+
+/* vue.css 给激活项留了一条 border-right: 2px solid（绿色），
+   上面只改了 border-left-color，于是红底右侧一直挂着一条绿线。 */
+.sidebar ul li.active > a,
+.sidebar-nav li.active > a {
+    border-right: none;
+}
+
+/* ---------- 8. 侧栏页内二级标题（H3）显示修复 ----------
+   docsify 把 H3 列表生成为 <ul class="app-sub-sidebar"> 并作为
+   <ul> 的兄弟节点（不在 <li> 内），sidebar-collapse 插件的
+   `.app-sub-sidebar { display: none }` 因此永远等不到 .open 或 .active 兄弟，
+   结果 H3 全部被永久隐藏。这里让嵌套的页内列表跟随父级一起显示。 */
+.app-sub-sidebar .app-sub-sidebar {
+    display: block;
+}
+
+/* ---------- 9. 面包屑图标 ----------
+   图标改为取章节自身的 emoji（🏛️ / 🌌 / ⚙️ / 👤 …），
+   不再固定用 📖，避免"侧栏是🌌、面包屑是📖"对不上。 */
+.custom-breadcrumb .bc-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* ---------- 10. 折叠块改用原生 <details> ----------
+   原来靠 onclick="toggleInsert(this)" + .open 类控制，
+   脚本一旦缺失就永远打不开。改成 <details>/<summary> 后
+   由浏览器原生负责开合，键盘可达、禁用 JS 也能用。 */
+.collapsible-insert > summary.insert-header {
+    list-style: none;
+}
+.collapsible-insert > summary.insert-header::-webkit-details-marker {
+    display: none;
+}
+.collapsible-insert > summary.insert-header::marker {
+    content: '';
+}
+.collapsible-insert > summary.insert-header:focus-visible {
+    outline: 3px solid var(--poke-blue);
+    outline-offset: -3px;
+}
+
+.collapsible-insert[open] > .insert-header {
+    border-bottom-color: #e5e7eb;
+}
+.collapsible-insert[open] > .insert-header .arrow {
+    transform: rotate(180deg);
+}
+.collapsible-insert[open] > .insert-body {
+    max-height: none;            /* 不再用 3000px 硬上限，内容再长也不会被截断 */
+    padding: 0 28px 28px 28px;
+}
+
+/* ---------- 11. 正文插图 ----------
+   原书用带编号圆圈的角色卡截图做"看图说话"，源图宽度 400~640px。
+   这里不写死展示宽度：按原始像素显示，既不放大发虚，也不会在窄屏溢出。
+   单独成段的图片再补一圈浅边框和圆角——截图放在白卡片上才分得清边界。 */
+.markdown-section img {
+    max-width: 100%;
+    height: auto;
+}
+
+.markdown-section p > img:only-child {
+    display: block;
+    margin: 1.2rem auto;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- 12. 表格铺满正文宽度 ----------
+   vue.css 给 table 设了 `display: block; overflow: auto`（为了窄屏能横向滚动）。
+   副作用是表格内部的"匿名表格盒"会收缩到内容宽度，于是桌面上看起来
+   比正文短一截（边框只画到内容右侧，右边留一片空白）。
+   桌面端改回 display: table，配合已有的 width: 100% 就能撑满；
+   窄屏仍保留 block + overflow，宽表可以左右滑动。 */
+@media (min-width: 769px) {
+    .markdown-section table {
+        display: table;
+    }
+    /* 首列通常是"点数/等级/编号/要点"这类短标签，
+       自动布局会把它压到最小宽度导致换行（"人类年龄差/异"），
+       桌面端给足空间，窄屏仍然允许换行。 */
+    .markdown-section table th:first-child,
+    .markdown-section table td:first-child {
+        white-space: nowrap;
+    }
+}
+
+/* ---------- 13. 窄屏表格排版 ----------
+   400px 宽的手机上，7 列表格如果还按 0.9rem + 0.9rem 内边距排，
+   表头会被挤成竖排单字。这里缩小字号与内边距，让表头至少能横着读。 */
+@media (max-width: 768px) {
+    .markdown-section table {
+        font-size: 0.82rem;
+    }
+    .markdown-section th,
+    .markdown-section td {
+        padding: 0.45rem 0.5rem;
+    }
+}
+
+/* ============================================================
+   终极版：高还原度 + 极简输入（单标签实现复杂图形）
+   ============================================================ */
+
+/* 1. 威力 POWER：<span class="pw" data-n="2"></span> */
+.pw {
+    display: inline-block;          /* 不能用 inline-flex，见文末「图标垂直定位」说明 */
+    overflow: hidden;               /* 把盒子的基线压成底边 */
+    height: 2.15rem;
+    text-align: center;
+    background: #7f8c8d; 
+    border: 2px solid #2b8a9e;
+    border-radius: 4px;
+    color: white; 
+    padding: 2px 8px; 
+    vertical-align: -0.725rem;  /* 0.35rem - 2.15rem/2 */
+    line-height: 1.1;
+    font-family: "Arial Black", Impact, sans-serif;
+}
+.pw::before {
+    content: "POWER";
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 0.4rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 1px;
+}
+.pw::after {
+    content: attr(data-n);
+    display: block;
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+/* 2. 时钟图标：<span class="clock" data-n="1"></span> / <span class="clock scene"></span> */
+.clock {
+    width: 2.2rem;
+    height: 2.2rem;
+    background: #7cb3d6;
+    border: 2px solid #4383a8;
+    border-radius: 6px;
+    display: inline-block;          /* 原来 inline-flex，见文末说明 */
+    vertical-align: -0.75rem;   /* 0.35rem - 2.2rem/2 */
+    position: relative;
+    margin: 0 4px;
+    box-shadow: inset 0 0 0 2px #fff, 0 2px 4px rgba(0,0,0,0.1); /* 内圈白边 */
+}
+/* 用伪元素画中间的白色表盘框 */
+.clock::before {
+    content: "";
+    position: absolute;
+    inset: 3px; /* 控制表盘大小 */
+    border: 2px solid #fff;
+    border-radius: 50%; /* 变成圆形表盘 */
+    opacity: 0.8;
+}
+/* 中间的数字/箭头 */
+.clock::after {
+    content: attr(data-n);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+    line-height: 1;
+    z-index: 1;
+}
+/* 完整场景（循环箭头） */
+.clock.scene::after {
+    content: "↻"; 
+    font-size: 1.4rem;
+}
+
+/* 3. 反应动作：<span class="react" data-n="1"></span> / <span class="react down" data-n="1"></span> */
+.react {
+    display: inline-block;
+    position: relative;
+    width: 2.4rem;
+    height: 2.4rem;
+    background: #3498db;
+    border-radius: 6px;
+    border: 2px solid #2980b9;
+    vertical-align: -0.85rem;   /* 0.35rem - 2.4rem/2 */
+    margin: 0 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+/* 上方小字 */
+.react::before {
+    content: "反应";
+    position: absolute;
+    top: 2px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fff;
+    font-size: 0.42rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+/* 下方白色框（包含箭头和数字） */
+.react::after {
+    content: "⬆ " attr(data-n);
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #3498db;
+    border-radius: 3px;
+    width: 80%;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1;
+}
+/* 向下变体 */
+.react.down::after {
+    content: "⬇ " attr(data-n);
+}
+
+/* 4. 招式类型：<span class="bg phy"></span> / <span class="bg spe"></span> */
+.bg {
+    display: inline-block;
+    overflow: hidden;               /* 把盒子的基线压成底边 */
+    height: 1.45rem;
+    line-height: 1.45rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0 10px;
+    border-radius: 12px;
+    color: #fff;
+    vertical-align: -0.375rem;  /* 0.35rem - 1.45rem/2 */
+    letter-spacing: 0.5px;
+}
+.bg.phy { background: #ea580c; }
+.bg.phy::before { content: "物理"; }
+.bg.spe { background: #2563eb; }
+.bg.spe::before { content: "特殊"; }
+
+/* ============================================================
+   终极版：骰池图标 (Dice Pool) - 单标签实现
+   用法：<span class="dice-pool" data-n="4"></span>
+   ============================================================ */
+.dice-pool {
+    display: inline-block;
+    position: relative;
+    width: 2.8rem;
+    height: 2.6rem;
+    vertical-align: -0.95rem;   /* 0.35rem - 2.6rem/2 */
+    margin: 0 4px;
+}
+
+/* 1. 左上角的“倾斜骰子” */
+.dice-pool::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 0px;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: #8c8378; /* 骰子底色：灰褐色 */
+    border-radius: 6px;
+    transform: rotate(15deg); /* 稍微倾斜 */
+    /* 使用径向渐变画出骰子的 6 个白点 */
+    background-image: 
+        radial-gradient(circle at 25% 25%, #fff 15%, transparent 18%),
+        radial-gradient(circle at 75% 25%, #fff 15%, transparent 18%),
+        radial-gradient(circle at 50% 50%, #fff 15%, transparent 18%),
+        radial-gradient(circle at 25% 75%, #fff 15%, transparent 18%),
+        radial-gradient(circle at 75% 75%, #fff 15%, transparent 18%),
+        radial-gradient(circle at 50% 85%, #fff 15%, transparent 18%);
+    z-index: 1;
+}
+
+/* 2. 右下角的“数字方块” */
+.dice-pool::after {
+    content: attr(data-n); /* 自动读取 data-n 的数字 */
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 1.6rem;
+    height: 1.6rem;
+    background-color: #7a7169; /* 数字框底色稍深一点 */
+    border: 2px solid #fff;    /* 醒目的白色粗边框 */
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 900;
+    font-family: "Arial Black", Impact, sans-serif;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* 增加一点立体感，压住骰子 */
+    z-index: 2;
+}
+
+/* 3. 变化招式：<span class="bg sta"></span> */
+.bg.sta { 
+    background: #6b7280; /* 灰色 */
+}
+.bg.sta::before { 
+    content: "变化"; 
+}
+
+/* ============================================================
+   行内图标的垂直定位
+   ------------------------------------------------------------
+   以前用 vertical-align: middle。它的规则是「盒子中心对齐
+   基线 + 半个 x-height」，而 x-height 是**字体度量**——
+   西文主字体和汉字字体的 x-height 并不一致，各浏览器取哪个
+   也不统一，于是同一页在不同浏览器里，图标一会儿偏下、一会儿偏上。
+
+   要稳定，就得让定位公式里不出现任何字体度量。做法：
+     1. 先让图标盒子的基线 = 它的「底边」
+        （inline-block 且 overflow:hidden，或盒内只剩绝对定位内容）
+     2. 再用 vertical-align 给它一个固定长度：
+        汉字视觉中心（约 0.35rem）− 盒高的一半
+
+   注意：这里写的是算好的定值，不是 calc()。
+   Firefox 对 vertical-align 里的 calc() 支持一直不稳，
+   不支持时会整条声明失效、退回 baseline，图标就整个浮到文字上方。
+   以后改盒高的话，记得把注释里的算式重算一遍。
+   ============================================================ */
+
+/* 图标内部是文字，不能继承正文的 1.8 行高，否则字符沉在行框底部 */
+.clock::after,
+.react::before,
+.react::after,
+.dice-pool::after {
+    line-height: 1;
+}
+
+/* ============================================================
+   初学者标识（纯 CSS 精灵球剪影）
+   用法：<span class="beginner-ball"></span>
+   ============================================================ */
+.beginner-ball {
+    display: inline-block;
+    width: 1.1em;             /* 随字号大小自动缩放 */
+    height: 1.1em;
+    background: #333;         /* 深灰色/黑色，你可以改成 var(--text-title) */
+    border-radius: 50%;
+    position: relative;
+    vertical-align: -0.15em;  /* 让图标和文字完美居中对齐 */
+    margin: 0 4px;
+}
+
+/* 中间的横线（用背景色镂空） */
+.beginner-ball::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 0.12em;
+    background: var(--card-bg, #ffffff); /* 使用卡片背景色，形成镂空感 */
+    transform: translateY(-50%);
+}
+
+/* 中间的空心圆 */
+.beginner-ball::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.36em;
+    height: 0.36em;
+    background: #333;
+    border: 0.12em solid var(--card-bg, #ffffff); /* 同样用背景色做外环 */
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* ============================================================
+   页内目录（右侧 TOC）
+   ------------------------------------------------------------
+   侧栏负责"去哪一章"，这一列负责"去哪一节"。
+   H2/H3 常驻；H4 由 JS 在当前小节里加 .is-open 才显示。
+   1280px 以下不显示，把宽度让给正文。
+   ============================================================ */
+.page-toc {
+    position: fixed;
+    top: calc(64px + env(safe-area-inset-top) + 20px);
+    right: 20px;
+    width: 214px;
+    max-height: calc(100vh - 64px - env(safe-area-inset-top) - 116px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    z-index: 60;
+    scrollbar-width: thin;
+}
+
+.page-toc[hidden] { display: none !important; }
+
+@media (min-width: 1280px) {
+    .page-toc { display: block; }
+
+    /* 给右侧目录腾出位置，正文继续居中 */
+    .content { padding-right: 250px !important; }
+
+    /* 这一页没有目录（首页 / 标题太少）时，把位置还给正文 */
+    body.toc-off .content { padding-right: 0 !important; }
+}
+
+.page-toc .toc-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 11px 14px 8px;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-title);
+}
+
+.page-toc .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px 8px 12px;
+}
+
+.page-toc .toc-list li { margin: 0; }
+
+.page-toc .toc-list a {
+    display: block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border-left: 2px solid transparent;
+    color: #6b7280;
+    text-decoration: none;
+    line-height: 1.45;
+    overflow-wrap: break-word;
+    transition: color 0.15s, background 0.15s;
+}
+
+/* 悬停用中性灰，不要和「当前项」的浅红撞车——
+   鼠标停在别的条目上时，两个红底会让人分不清自己在哪一节 */
+.page-toc .toc-list a:hover {
+    color: var(--text-title);
+    background: #f3f4f6;
+}
+
+.page-toc .toc-list a.active {
+    color: var(--poke-red);
+    font-weight: 600;
+    background: var(--poke-red-light);
+    border-left-color: var(--poke-red);
+}
+
+.page-toc .toc-l3 a { padding-left: 18px; }
+.page-toc .toc-l4 a { padding-left: 30px; font-size: 0.94em; }
+
+/* 逐级展开：只显示「当前 H2 下的 H3」和「当前 H3 下的 H4」。
+   否则 02 章 78 个标题会整列铺开，等于把侧栏的老问题搬到这里。 */
+.page-toc .toc-l3,
+.page-toc .toc-l4 { display: none; }
+.page-toc .toc-l3.is-open,
+.page-toc .toc-l4.is-open { display: block; }
+
+@media print {
+    .page-toc { display: none !important; }
+}
+/* ============================================================
+   14. file:// 打开时的提示卡
+   双击 index.html 时浏览器不允许读 .md，页面必然是空的。
+   与其让人对着一片空白猜，不如把原因和解决办法写清楚。
+   正常通过 http:// 访问时，这些规则一条都不生效。
+   ============================================================ */
+.file-notice { display: none; }
+
+/* docsify 启动后会把 #app 整个替换成 <main>，所以两边都要藏 */
+html.no-docsify #app,
+html.no-docsify main,
+html.no-docsify .progress,
+html.no-docsify .dex-fab,
+html.no-docsify #searchOverlay,
+html.no-docsify .sidebar-overlay {
+    display: none !important;
+}
+
+html.no-docsify .file-notice {
+    display: block;
+    max-width: 720px;
+    margin: 40px auto 64px;
+    padding: 0 20px;
+}
+
+.file-notice .fn-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 5px solid var(--poke-red);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    padding: 26px 28px 22px;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.85;
+}
+
+.file-notice .fn-icon {
+    font-size: 1.7rem;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.file-notice h2 {
+    color: var(--text-title);
+    font-size: 1.22rem;
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+}
+
+.file-notice p { margin: 0 0 0.9em; }
+
+.file-notice ol {
+    margin: 0 0 0.9em;
+    padding-left: 1.4em;
+}
+
+.file-notice li { margin: 0.45em 0; }
+
+.file-notice code {
+    background: #f3f4f6;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 0.08em 0.4em;
+    font-size: 0.9em;
+}
+
+.file-notice .fn-tip {
+    color: #6b7280;
+    font-size: 0.88rem;
+    margin-bottom: 0;
+}

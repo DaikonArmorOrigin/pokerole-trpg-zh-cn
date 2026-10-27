@@ -1,0 +1,63 @@
+/* ============================================================
+ * obsidian-callouts.css — Obsidian 卡片样式
+ *
+ * 用法：把这个文件复制到你的 Obsidian 库的
+ *       <库>/.obsidian/snippets/obsidian-callouts.css
+ *       然后在「设置 → 外观 → CSS 代码片段」里启用它。
+ *
+ * 作用：让 Obsidian 里也能把 > [!gm] / [!rule] / [!trainer]
+ *       渲染成和网站上一致的彩色卡片（这几种是自定义类型，
+ *       Obsidian 默认不认识，只会显示成普通引用块）。
+ * ============================================================ */
+
+/* 提示卡 —— 对应网站 .tip-card（蓝色） */
+.callout[data-callout="tip"] {
+    --callout-color: 48, 167, 215;
+    --callout-icon: lucide-lightbulb;
+}
+
+/* 规则卡 —— 对应网站 .rule-card（琥珀色） */
+.callout[data-callout="rule"] {
+    --callout-color: 245, 158, 11;
+    --callout-icon: lucide-triangle-alert;
+}
+
+/* 叙事者笔记 —— 对应网站 .storyteller-note（靛蓝色） */
+.callout[data-callout="gm"] {
+    --callout-color: 79, 70, 229;
+    --callout-icon: lucide-drama;
+}
+
+/* 训练家贴士 —— 对应网站 .trainer-tip（绿色） */
+.callout[data-callout="trainer"] {
+    --callout-color: 16, 185, 129;
+    --callout-icon: lucide-graduation-cap;
+}
+
+/* 译注 —— 对应网站 .translator-note（折叠） */
+.callout[data-callout="note"] {
+    --callout-color: 107, 114, 128;
+    --callout-icon: lucide-pencil-line;
+}
+
+/* 中文别名也一并支持，写法与网站一致 */
+.callout[data-callout="提示"] {
+    --callout-color: 48, 167, 215;
+    --callout-icon: lucide-lightbulb;
+}
+.callout[data-callout="规则"] {
+    --callout-color: 245, 158, 11;
+    --callout-icon: lucide-triangle-alert;
+}
+.callout[data-callout="叙事"] {
+    --callout-color: 79, 70, 229;
+    --callout-icon: lucide-drama;
+}
+.callout[data-callout="训练家"] {
+    --callout-color: 16, 185, 129;
+    --callout-icon: lucide-graduation-cap;
+}
+.callout[data-callout="译注"] {
+    --callout-color: 107, 114, 128;
+    --callout-icon: lucide-pencil-line;
+}

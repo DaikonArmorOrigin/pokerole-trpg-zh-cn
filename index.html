@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>宝可梦TRPG 规则书</title>
+    <meta name="description" content="宝可梦 TRPG（桌面角色扮演）中文规则书，PokeRole 规则书的粉丝翻译项目。">
+    <meta name="theme-color" content="#e3350d">
+    <!-- 主题是浅色的：声明一下，免得手机 Chrome 的「强制深色」把整页反色 -->
+    <meta name="color-scheme" content="light">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="宝可梦TRPG 规则书">
+    <meta property="og:description" content="宝可梦 TRPG 中文规则书 · PokeRole 粉丝翻译项目">
+    <meta property="og:locale" content="zh_CN">
+
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+    <link rel="manifest" href="manifest.webmanifest">
+
+    <!-- ===== Docsify 主题与插件样式（本地 vendor，可离线运行） ===== -->
+    <link rel="stylesheet" href="vendor/vue.css">
+
+    <!-- ===== 项目自定义样式 ===== -->
+    <link rel="stylesheet" href="assets/theme.css">
+
+    <!-- ============================================================
+         本地双击打开（file://）时的兜底提示
+         浏览器禁止 file:// 页面 fetch 同目录的 .md，而 docsify 正是靠
+         fetch 取正文和侧栏的，所以双击一定是空白——这不是代码坏了。
+         这里只做一件事：把 docsify 的容器藏起来，换成一段看得懂的说明。
+         用 http:// 打开（启动预览.bat / Live Server）时这段完全不生效。
+         ============================================================ -->
+    <script>
+        if (location.protocol === 'file:') {
+            document.documentElement.className += ' no-docsify';
+        }
+    </script>
+</head>
+<body>
+
+    <a class="skip-link" href="#main">跳到正文</a>
+
+    <!-- ============================================================
+         顶部导航栏
+         ============================================================ -->
+    <header class="custom-header">
+        <button class="menu-btn" id="menuToggle" type="button"
+                aria-label="打开目录" aria-expanded="false">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
+        <div class="poke-ball" aria-hidden="true">
+            <div class="top"></div>
+            <div class="divider"></div>
+            <div class="center-btn"><div class="dot"></div></div>
+        </div>
+
+        <div class="title-group">
+            <h1>宝可梦TRPG 规则书</h1>
+            <small>Pokémon TRPG · 翻译项目</small>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- docsify 的挂载点 -->
+    <div id="app"></div>
+
+    <!-- ============================================================
+         file:// 提示卡（仅本地双击时显示，见 <head> 里的脚本）
+         ============================================================ -->
+    <div class="file-notice" id="fileNotice">
+        <div class="fn-card">
+            <div class="fn-icon" aria-hidden="true">🔌</div>
+            <h2>这个页面需要用「本地服务器」打开</h2>
+            <p>你现在是直接双击 <code>index.html</code> 打开的（地址栏以 <code>file://</code> 开头）。
+               浏览器出于安全限制，禁止这种页面读取同目录的 <code>.md</code> 文件，
+               而规则书的正文正是这样读进来的，所以这里只会是一片空白。</p>
+            <p><b>解决办法（二选一）：</b></p>
+            <ol>
+                <li><b>双击项目文件夹里的 <code>启动预览.bat</code></b><br>
+                    会自动用浏览器打开 <code>http://127.0.0.1:8000/</code>。
+                    以后预览都点它；关掉弹出的黑色窗口就是停止。</li>
+                <li>或者继续用原来的方式：VSCode 里右键 <code>index.html</code> →
+                    <b>Open with Live Server</b>。</li>
+            </ol>
+            <p class="fn-tip">部署到 GitHub Pages 之后，直接用网址访问不会有这个问题。</p>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         图鉴按钮：点开全屏搜索
+         图形是「放大镜 + 精灵球」：镜片就是球体，手柄就是搜索，
+         远看是搜索，近看是宝可梦图鉴。
+         ============================================================ -->
+    <button class="dex-fab" id="dexFab" type="button"
+            aria-label="搜索规则内容" aria-haspopup="dialog" aria-expanded="false"
+            title="搜索规则内容">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <!-- 镜片=精灵球：整体淡白底、下半更亮、中心按钮最亮 -->
+            <circle cx="10.2" cy="10.2" r="7.3" fill="currentColor" fill-opacity=".2"/>
+            <path d="M2.9 10.2a7.3 7.3 0 0 0 14.6 0z" fill="currentColor" fill-opacity=".78" stroke="none"/>
+            <path d="M2.7 10.2h15"/>
+            <circle cx="10.2" cy="10.2" r="2.5" fill="currentColor" stroke="none"/>
+            <path d="M15.5 15.5L21 21"/>
+        </svg>
+    </button>
+
+    <!-- 全屏搜索浮层 -->
+    <div class="search-overlay" id="searchOverlay" role="dialog" aria-modal="true"
+         aria-label="搜索规则内容" hidden>
+        <div class="search-panel">
+            <div class="search-field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="M20 20l-3.6-3.6"/>
+                </svg>
+                <!-- 用 text 而不是 search：type=search 会自带一个清除叉，
+                     和右侧关闭按钮撞在一起；Esc 在 search 里还会先清空内容 -->
+                <input id="searchInput" type="text" placeholder="搜索规则内容…"
+                       autocomplete="off" spellcheck="false" aria-label="搜索关键词">
+                <button class="search-close" id="searchClose" type="button" aria-label="关闭搜索">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6L6 18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="search-body" id="searchBody">
+                <p class="search-hint">输入关键词，例如「先攻」「异常状态」「经验值」</p>
+            </div>
+            <div class="search-foot">
+                <span><kbd>↑</kbd> <kbd>↓</kbd> 选择</span>
+                <span><kbd>Enter</kbd> 打开</span>
+                <span><kbd>Esc</kbd> 关闭</span>
+            </div>
+        </div>
+    </div>
+
+    <noscript>
+        <p style="padding:120px 24px 24px;text-align:center;color:#374151;">
+            本规则书需要启用 JavaScript 才能阅读。
+        </p>
+    </noscript>
+
+    <!-- ============================================================
+         脚本加载顺序：数据 → 应用逻辑（含 $docsify 配置）→ docsify 本体
+         注意：app.js 必须先于 docsify.min.js 执行，否则配置不生效
+
+         不再加载 vendor/search.min.js：搜索由 app.js 自己实现，
+         那个插件只会再插一个侧栏输入框出来，与全屏搜索重复。
+         ============================================================ -->
+    <script src="assets/type-data.js"></script>
+    <script src="assets/app.js"></script>
+
+    <script src="vendor/docsify.min.js"></script>
+    <script src="vendor/sidebar-collapse.min.js"></script>
+
+    <!-- ============================================================
+         离线支持（PWA）
+         只在真正的线上环境注册；file:// 直接跳过，本地 http:// 也跳过
+         （本地开发开着 SW 会让「改了没生效」变成日常）。
+         md 走「网络优先」、其余静态资源走「先用缓存 + 后台更新」，
+         所以新增 .md / .webp 不会被旧缓存挡住。
+         ============================================================ -->
+    <script>
+        (function () {
+            if (!('serviceWorker' in navigator)) return;
+            if (location.protocol === 'file:') return;   // file:// 下没有 SW
+
+            var host = location.hostname;
+            var isLocal = host === 'localhost' || host === '127.0.0.1' ||
+                          host === '::1' || host === '[::1]';
+
+            // 本地开发：把以前注册过的 SW 注销掉。
+            // 否则「缓存优先」会让改完的 css/js 看起来完全没生效，
+            // 每次都要手动 DevTools → Application → 清缓存，很折磨。
+            if (isLocal) {
+                navigator.serviceWorker.getRegistrations().then(function (list) {
+                    list.forEach(function (r) { r.unregister(); });
+                }).catch(function () { /* 忽略 */ });
+                return;
+            }
+
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js').catch(function () { /* 静默失败 */ });
+            });
+        })();
+    </script>
+
+</body>
+</html>

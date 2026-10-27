@@ -1,0 +1,1813 @@
+/* ============================================================
+ * sheets.css — 角色卡（训练家 / 宝可梦）
+ *
+ * 【坐标来源】.workbuddy-ai/sheet-layout.json + PDF 矢量块实测。
+ * 1pt = 1px，所有色块都用「PDF 里的绝对坐标」写成 position:absolute，
+ * 不做推算、不做目测。改数值前先回去读 PDF。
+ *
+ * 【画布】四张卡的画布尺寸取自各自内容包围盒，互不相同：
+ *   训练家正 550.5 × 386.8    训练家背 550.2 × 386.8
+ *   宝可梦正 548.0 × 383.8    宝可梦背 548.0 × 386.5
+ * 导出 PNG 时按这些尺寸 ×3，和 PDF 1:1 对得上。
+ *
+ * 【配色】取自 PDF 的 fills：
+ *   #d22417 宝可梦红   #a11d1d 暗红    #841722 酒红
+ *   #522923 深棕红     #3c3c3b 炭黑    #433727 描边棕
+ *   #e1e1e4 浅灰纸     #f1f1f3 纸上花纹  #04a29a 青绿
+ * ============================================================ */
+
+.cs-page {
+    --red: #d22417;
+    --red-dark: #a11d1d;
+    --wine: #841722;
+    --brown: #522923;
+    --ink: #3c3c3b;
+    --line: #433727;
+    --paper: #e1e1e4;
+    --teal: #04a29a;
+    --cream: #fae896;
+
+    /* 纸面底纹：26.5px 网格上的浅色圆环 + 两侧圆点（PDF 里 tile 就是 26.5） */
+    --dot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26.5' height='26.5'%3E%3Cg fill='none' stroke='%23f1f1f3' stroke-width='1.5'%3E%3Ccircle cx='13.25' cy='13.25' r='6.4'/%3E%3C/g%3E%3Cg fill='%23f1f1f3'%3E%3Ccircle cx='0.9' cy='13.25' r='1.9'/%3E%3Ccircle cx='25.6' cy='13.25' r='1.9'/%3E%3C/g%3E%3C/svg%3E");
+
+    background: #eef0f3;
+    min-height: 100vh;
+    padding-bottom: 60px;
+}
+
+/* 卡面里所有尺寸都是「含边框的外框尺寸」 */
+.cs-page,
+.cs-page *,
+.cs-page *::before,
+.cs-page *::after {
+    box-sizing: border-box;
+}
+
+/* ---------- 页面外壳 ---------- */
+.cs-bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 56px;
+    padding: 0 18px;
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .18);
+}
+.cs-bar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    text-decoration: none;
+    font-size: .88rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .14);
+}
+.cs-bar a:hover { background: rgba(255, 255, 255, .24); }
+.cs-bar h1 { margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: .5px; }
+.cs-bar .spacer { flex: 1; }
+
+.cs-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 16px 0;
+}
+
+/* ---------- 选项卡 ---------- */
+.cs-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.cs-tab {
+    padding: 8px 16px;
+    border: 1px solid #d8dbe0;
+    border-radius: 10px;
+    background: #fff;
+    color: #4b5563;
+    font-family: inherit;
+    font-size: .88rem;
+    cursor: pointer;
+}
+.cs-tab[aria-selected="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+    font-weight: 700;
+}
+
+.cs-subbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.cs-subbar .lbl { font-size: .82rem; color: #6b7280; }
+.cs-slot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #d8dbe0;
+    background: #fff;
+    color: #6b7280;
+    font-family: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+    padding: 0;
+}
+.cs-slot[aria-pressed="true"] {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    font-weight: 700;
+}
+
+/* ---------- 缩放舞台 ---------- */
+.sheet-stage {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+.sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: top left;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 6px 26px rgba(15, 23, 42, .16);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: var(--ink);
+    line-height: 1;
+}
+.sheet[hidden] { display: none; }
+
+/* 画布尺寸 —— 与 PDF 内容包围盒一致 */
+.sheet.tf { width: 550.5px; height: 386.8px; }
+.sheet.tb { width: 550.2px; height: 386.8px; }
+.sheet.pf { width: 548.0px; height: 383.8px; background: var(--red); }
+.sheet.pb { width: 548.0px; height: 386.5px; }
+
+/* ============================================================
+ * 通用小件
+ * ============================================================ */
+.pips { display: flex; justify-content: center; align-items: center; }
+.pip {
+    color: inherit;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: currentColor;
+    background: currentColor;
+    padding: 0;
+    cursor: pointer;
+    transition: background .1s;
+    flex: none;
+}
+.pip.on { background: var(--ink); border-color: var(--ink); }
+
+.chk {
+    display: grid;
+    place-items: center;
+    border: 1.4px solid var(--ink);
+    border-radius: 2.5px;
+    background: #fff;
+    cursor: pointer;
+    padding: 0;
+    flex: none;
+}
+.chk.on { background: var(--ink); border-color: var(--ink); }
+
+/* 卡内输入框：无边框，靠底色区分 */
+.sheet input[type="text"],
+.sheet textarea {
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    color: var(--ink);
+    outline: none;
+    padding: 0;
+    line-height: 1;
+    /* flex 子项的 min-height 默认是 auto，会把输入框撑回固有高度 */
+    min-height: 0;
+}
+.sheet input[type="text"]:focus,
+.sheet textarea:focus {
+    background: rgba(255, 255, 255, .5);
+    box-shadow: 0 0 0 1.5px rgba(210, 36, 23, .35);
+    border-radius: 3px;
+}
+.sheet textarea { resize: none; }
+
+/* 竖排标签（技能分组） */
+.stab {
+    position: absolute;
+    left: 59.3px;
+    width: 13.7px;
+    background: var(--brown);
+    border-radius: 0 6px 6px 0;
+    display: grid;
+    place-items: center;
+    font-size: 8px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    line-height: 1;
+}
+
+/* ============================================================
+ * 训练家 · 正面   550.5 × 386.8
+ * ============================================================ */
+
+/* 左半炭黑底板 0,0 273.1×385.8 */
+.tf-ink {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 273.1px;
+    height: 385.8px;
+    background-color: var(--ink);
+    background-image:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .05) 0 38%, transparent 41%),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, .014) 0 1.5px, transparent 1.5px 4.5px);
+    background-size: 7.6px 7.6px, auto;
+}
+
+/* 左上角大精灵球：可见半圆，红 1.7~57.2 / 带 57.2~66.5 / 白 66.5~122 */
+.tf-ball {
+    position: absolute;
+    left: 0;
+    top: 2.5px;
+    width: 59.5px;
+    height: 119px;
+    border-radius: 0 59.5px 59.5px 0 / 0 59.5px 59.5px 0;
+    background: linear-gradient(to bottom,
+        #d12317 0 46%,
+        var(--ink) 46% 53.8%,
+        #fff 53.8% 100%);
+}
+/* 中央按钮：墨色外环 50.3，白色内盘 36.9，圆心在卡片左边缘 y=62 */
+.tf-ball::before,
+.tf-ball::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+}
+.tf-ball::before {
+    left: -25.15px;
+    top: 34.35px;
+    width: 50.3px;
+    height: 50.3px;
+    background: var(--ink);
+}
+.tf-ball::after {
+    left: -18.45px;
+    top: 41.05px;
+    width: 36.9px;
+    height: 36.9px;
+    background: #fff;
+}
+
+/* 执照白卡 8.8,96 255.4×270.1，拱形顶 + 深红上沿 */
+.tf-lic {
+    position: absolute;
+    left: 8.8px;
+    top: 96px;
+    width: 255.4px;
+    height: 270.1px;
+    background: linear-gradient(to bottom, #ffffff 0%, #fcfcfd 34%, #f1f2f5 72%, #e7e9ee 100%);
+    border-radius: 50% 50% 6px 6px / 40% 40% 6px 6px;
+    box-shadow: 0 1px 0 #cfd0d4;
+}
+/* 顶端深红弧带：SVG 描边（border-top 在 Firefox 上会画成厚环） */
+.tf-arc {
+    position: absolute;
+    left: 8.8px;
+    top: 96px;
+    width: 255.4px;
+    height: 120px;
+    display: block;
+    overflow: visible;
+    pointer-events: none;
+}
+/* 证件照区域的柔光 */
+.tf-photo {
+    position: absolute;
+    left: 4%;
+    top: 8%;
+    width: 92%;
+    height: 74%;
+    background: radial-gradient(100% 78% at 50% 6%,
+        #ffffff 0%, #fbfbfd 34%, #f4f4f7 68%, rgba(244, 244, 247, 0) 100%);
+    pointer-events: none;
+}
+
+/* 签名条 19.5,326.1 / 25.3,346.3  204.8×14.9 */
+.tf-bar {
+    position: absolute;
+    height: 14.9px;
+    width: 204.8px;
+}
+.tf-bar.b1 { left: 19.5px; top: 326.1px; }
+.tf-bar.b2 { left: 25.3px; top: 346.3px; }
+.tf-bar .bx {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 100%, 0 100%);
+    box-shadow: 0 1.2px 2.2px rgba(60, 60, 59, .22);
+}
+.tf-bar input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(100% - 24px);
+    height: 100%;
+    padding: 0 8px;
+    font-size: 9px;
+}
+.tf-bar.b1 input { padding-left: 28px; }
+.tf-bar.b2 input { padding-left: 22px; }
+.tf-bar span {
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 4.4px;
+    font-size: 7px;
+    font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+/* 红色精灵球徽章 13.8,323 31.6×41.8 */
+.tf-seal {
+    position: absolute;
+    left: 13.8px;
+    top: 323px;
+    width: 31.6px;
+    height: 41.8px;
+    background: #d22416;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .9);
+}
+.tf-seal::before {
+    content: "";
+    position: absolute;
+    left: 0.45px;
+    top: 7.55px;
+    width: 30.7px;
+    height: 30.7px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, #fff 0 46.6%, #d22416 46.6% 53.4%, #fff 53.4% 100%);
+}
+.tf-seal::after {
+    content: "";
+    position: absolute;
+    left: 9.05px;
+    top: 16.2px;
+    width: 13.4px;
+    height: 13.4px;
+    border-radius: 50%;
+    border: 3.4px solid #d22416;
+    background: #fff;
+}
+
+/* 标题：Pokemon League 57/37.6 · Trainer's Licence 77.6/56.1 */
+.tf-title { position: absolute; left: 0; top: 0; }
+.tf-title b,
+.tf-title span { position: absolute; white-space: nowrap; color: #fff; }
+.tf-title b {
+    left: 57px;
+    top: 25.4px;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+.tf-title span {
+    left: 77.6px;
+    top: 44.2px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* --- 右半：纸面 277.4,0 273.1×386.7 --- */
+.tf-right {
+    position: absolute;
+    left: 277.4px;
+    top: 0;
+    width: 273.1px;
+    height: 386.7px;
+    background-color: var(--paper);
+    background-image: var(--dot);
+}
+
+/* 属性胶囊底板 288.3,19.5 93.5×191 */
+.tf-gray {
+    position: absolute;
+    left: 10.9px;
+    top: 19.5px;
+    width: 93.5px;
+    height: 191px;
+    background: #c2c2c7;
+    border-radius: 10px;
+}
+
+/* 能力 298.7,28.1 72.1×32.6 ×4，节距 46.85 */
+.tf-attrs {
+    position: absolute;
+    left: 19.8px;
+    top: 26.6px;
+    display: flex;
+    flex-direction: column;
+    gap: 11.25px;
+}
+.attr {
+    width: 75.1px;
+    height: 35.6px;
+    background: var(--teal);
+    border: 3px solid var(--line);
+    border-radius: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #fff;
+}
+.attr b {
+    color: var(--line);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    line-height: 1;
+}
+.attr .pips { gap: 2.4px; }
+.attr .pip { width: 6.2px; height: 6.2px; border-width: 1.1px; }
+
+/* 华丽度 393.7,27.3 63.5×31.2 ×5，节距 38 */
+.tf-contest {
+    position: absolute;
+    left: 114.8px;
+    top: 25.8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3.8px;
+}
+.contest {
+    width: 66.5px;
+    height: 34.2px;
+    border: 3px solid var(--line);
+    border-radius: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5px;
+    color: #fff;
+}
+.contest b {
+    color: var(--line);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: .3px;
+    line-height: 1;
+}
+.c-tough  { background: #fae896; color: #5c4a1e; }
+.c-cool   { background: #f7b393; color: #5c3320; }
+.c-beauty { background: #bdcde7; color: #2c3b52; }
+.c-cute   { background: #f6bace; color: #5c2b3b; }
+.c-clever { background: #bad594; color: #33461f; }
+.contest .pips { gap: 1.8px; color: #fff; }
+.contest .pip { width: 5.6px; height: 5.6px; border-width: 1px; }
+
+/* 技能酒红列 468.7,19.5 59.3×262.1 */
+.tf-skills {
+    position: absolute;
+    left: 191.3px;
+    top: 19.5px;
+    width: 59.3px;
+    height: 262.1px;
+    background: var(--wine);
+    border-radius: 9px;
+    color: #fff;
+}
+.sgroup {
+    position: absolute;
+    left: 0;
+    width: 59.3px;
+    display: flex;
+    flex-direction: column;
+}
+/* 四组的首行基线：29 / 91.4 / 153.6 / 218.7（行盒 14，基线≈行顶+10.4） */
+.tf-skills .g1 { top: 2px; }
+.tf-skills .g2 { top: 64.4px; }
+.tf-skills .g3 { top: 126.6px; }
+.tf-skills .g4 { top: 191.7px; }
+.skill {
+    height: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+.skill b {
+    font-size: 7px;
+    font-weight: 800;
+    line-height: 9px;
+    height: 9px;
+    letter-spacing: .2px;
+    white-space: nowrap;
+}
+.skill .pips { gap: 1.7px; height: 5px; }
+.skill .pip { width: 4.4px; height: 4.4px; border-width: .9px; }
+/* 分组竖排标签：贴在酒红列右缘外 13.7 */
+.tf-skills .t1 { top: 0; height: 59.1px; }
+.tf-skills .t2 { top: 63px; height: 59.1px; }
+.tf-skills .t3 { top: 126px; height: 59.1px; }
+.tf-skills .t4 { top: 191.1px; height: 59.1px; }
+
+/* 性格 / 概念 287.2,217.7 176.8×52.9 */
+.tf-nc {
+    position: absolute;
+    left: 9.8px;
+    top: 217.7px;
+    width: 176.8px;
+    height: 52.9px;
+    background: var(--ink);
+    border-radius: 8px;
+}
+.tf-nc .row {
+    position: absolute;
+    left: 3.8px;
+    background: #fff;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 7px;
+}
+.tf-nc .r1 { top: 3px; width: 169.1px; height: 24.7px; }
+.tf-nc .r2 { top: 31.9px; width: 168.9px; height: 17.4px; }
+.tf-nc .row b {
+    font-size: 10px;
+    color: var(--ink);
+    letter-spacing: .5px;
+    flex: none;
+    line-height: 1;
+}
+.tf-nc .row input { flex: 1; width: auto; font-size: 10px; }
+
+/* 成就 287.2,276.3 176.8×93.8 */
+.tf-ach {
+    position: absolute;
+    left: 9.8px;
+    top: 276.3px;
+    width: 176.8px;
+    height: 93.8px;
+    background: var(--ink);
+    border-radius: 8px;
+}
+.tf-ach .hd {
+    height: 17.7px;
+    line-height: 17.7px;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    color: #fff;
+}
+.tf-ach .body {
+    position: absolute;
+    left: 4.3px;
+    top: 17.7px;
+    width: 168.1px;
+    height: 70.4px;
+    background: #fff;
+    border-radius: 5px;
+    padding: 1px 5px 2px 7px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.tf-ach .aline {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 15px;
+}
+.tf-ach .aline-text {
+    flex: 1;
+    min-width: 0;
+    height: 14px;
+    border-bottom: 1px solid #cfcfd4;
+}
+.tf-ach .aline-edit {
+    width: 100%;
+    height: 13px;
+    font-size: 8px;
+    line-height: 13px;
+    outline: none;
+    white-space: pre;
+    overflow: hidden;
+}
+.tf-ach .aline-edit:empty::before {
+    content: attr(data-placeholder);
+    color: #d2d2d7;
+}
+.tf-ach .aline .chk { width: 14px; height: 14px; margin-bottom: 0; }
+
+/* 额外技能 469.6,287.4 59.3×81.1 */
+.tf-extra {
+    position: absolute;
+    left: 192.2px;
+    top: 287.4px;
+    width: 59.3px;
+    height: 81.1px;
+    background: var(--wine);
+    border-radius: 9px;
+    color: #fff;
+}
+.tf-extra .col {
+    position: absolute;
+    left: 5px;
+    top: 11.3px;
+    width: 49.5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.tf-extra .box {
+    width: 49.5px;
+    height: 15.9px;
+    background: #fff;
+    border-radius: 4px;
+    display: flex;
+}
+.tf-extra .box input {
+    width: 100%;
+    height: 100%;
+    font-size: 8px;
+    padding: 0 4px;
+    text-align: center;
+}
+.tf-extra .box.b3 { margin-top: 12.3px; }
+.tf-extra .pips { gap: 2.2px; height: 6.2px; margin: 3px 0; }
+.tf-extra .pip { width: 4.6px; height: 4.6px; border-width: 1px; }
+.tf-extra .gname {
+    position: absolute;
+    left: 59.3px;
+    top: 8.3px;
+    width: 13.7px;
+    height: 34.8px;
+    background: var(--brown);
+    border-radius: 0 6px 6px 0;
+    display: grid;
+    place-items: center;
+    font-size: 7px;
+    font-weight: 800;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    color: #fff;
+    line-height: 1;
+}
+
+/* ============================================================
+ * 训练家 · 背面   550.2 × 386.8
+ * ============================================================ */
+.tb-left-paper,
+.tb-right {
+    position: absolute;
+    background-color: var(--paper);
+    background-image: var(--dot);
+}
+.tb-left-paper { left: 0.3px; top: 0; width: 273.2px; height: 385.9px; }
+.tb-right { left: 277.4px; top: 1px; width: 273.1px; height: 385.8px; }
+
+/* HP / 意志 / 等级 7.8,17.9 82.3×31.3 */
+.tb-stats {
+    position: absolute;
+    left: 7.8px;
+    top: 17.9px;
+    display: flex;
+    gap: 5.7px;
+}
+.stat {
+    width: 82.3px;
+    height: 31.3px;
+    background: var(--ink);
+    border-radius: 6px;
+    padding: 0.5px 2.3px 2.3px;
+    display: flex;
+    flex-direction: column;
+}
+.stat b {
+    text-align: center;
+    color: #fff;
+    font-size: 7.5px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    line-height: 14.2px;
+    height: 14.2px;
+}
+.sheet .stat input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    background: #fff;
+    border-radius: 3px;
+    font-size: 11px;
+    text-align: center;
+    color: var(--ink);
+}
+.tb-stats .stat:nth-child(3) { margin-left: 0.7px; }
+
+/* 年龄 / 金钱 10.1,53.3 / 96.5,53.3 */
+.tb-am { position: absolute; left: 0; top: 53.3px; }
+.tb-am .am {
+    position: absolute;
+    top: 0;
+    height: 41.3px;
+    background: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 7px;
+    padding: 4px 6px 3px;
+    display: flex;
+    flex-direction: column;
+}
+.tb-am .age { left: 9.1px; width: 82px; }
+.tb-am .money { left: 95.5px; width: 174.3px; }
+.tb-am b {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--red-dark);
+    letter-spacing: .4px;
+    line-height: 10px;
+}
+.tb-am input { width: 100%; font-size: 11px; margin-top: 3px; }
+
+/* 分隔线 0.3,97.3 */
+.tb-hr {
+    position: absolute;
+    left: 0.3px;
+    top: 97.3px;
+    width: 273.2px;
+    height: 6.9px;
+    background: #fff;
+}
+.tb-hr::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.9px;
+    width: 100%;
+    height: 4.2px;
+    background: var(--ink);
+}
+
+/* 队伍标题 0.3,115.1 273.2×18 */
+.tb-teamhead {
+    position: absolute;
+    left: 0.3px;
+    top: 115.1px;
+    width: 273.2px;
+    height: 18px;
+    background: var(--red-dark);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+}
+
+/* 六格 14.3/147.3 × 149/224/299  120×71 */
+.team-grid {
+    position: absolute;
+    left: 14.3px;
+    top: 149px;
+    display: grid;
+    grid-template-columns: 120px 120px;
+    column-gap: 13px;
+    row-gap: 4px;
+}
+.tslot {
+    position: relative;
+    width: 120px;
+    height: 71px;
+    background: var(--ink);
+    border-radius: 6px;
+}
+.tslot .tname {
+    position: absolute;
+    left: 3.2px;
+    top: 3.1px;
+    width: 113.5px;
+    height: 11.1px;
+    background: #fff;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0 3px;
+}
+.tslot .tname i {
+    font-style: normal;
+    font-size: 5.1px;
+    font-weight: 800;
+    color: var(--red-dark);
+    flex: none;
+    line-height: 1;
+}
+.tslot .tname input { flex: 1; width: auto; font-size: 8px; }
+.tslot .tava {
+    position: absolute;
+    left: -12px;
+    top: 15.3px;
+    width: 57.5px;
+    height: 57.5px;
+    border-radius: 50%;
+    background: var(--ink);
+    display: grid;
+    place-items: center;
+}
+.tslot .tava::after {
+    content: "";
+    width: 49px;
+    height: 49px;
+    border-radius: 50%;
+    background: #fff;
+}
+.tslot .tfields {
+    position: absolute;
+    left: 46.7px;
+    top: 17.3px;
+    width: 69.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.2px;
+}
+.tslot .tfields label {
+    height: 15.7px;
+    background: #fff;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 3px;
+    overflow: hidden;
+}
+.tslot .tfields i {
+    font-style: normal;
+    font-size: 5.1px;
+    font-weight: 800;
+    color: var(--red-dark);
+    flex: none;
+    line-height: 1;
+}
+.tslot .tfields input { flex: 1; width: auto; font-size: 7.5px; }
+
+/* --- 背包 --- */
+.tb-baghead {
+    position: absolute;
+    left: -0.1px;
+    top: 11.3px;
+    width: 273.2px;
+    height: 14px;
+    background: var(--red-dark);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+}
+
+/* 背包框 290.4,30.5 247.1×181.1（相对右栏 13,29.5） */
+.bag-box {
+    position: absolute;
+    left: 11.5px;
+    top: 28px;
+    width: 250.1px;
+    height: 184.1px;
+    background: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 6px;
+}
+.box-top {
+    position: absolute;
+    left: -3px;
+    top: -3px;
+    width: calc(100% + 6px);
+    height: 21.7px;
+    background: var(--ink);
+    border-radius: 6px 6px 0 0;
+}
+.box-top::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: 4px;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, #d8d8dc 0 3px, transparent 3px 6.5px);
+}
+.bag-cols {
+    position: absolute;
+    left: 6px;
+    top: 23px;
+    right: 6px;
+    bottom: 6px;
+    display: flex;
+    gap: 12px;
+}
+.bag-cols .bag-col {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    font-size: 8.5px;
+    line-height: 16px;
+    color: var(--ink);
+    background-image: linear-gradient(to bottom, #d5d5da 0 1px, transparent 1px);
+    background-size: 100% 16px;
+    background-repeat: repeat-y;
+    background-position: 0 15px;
+}
+.sheet .pf-inst textarea { min-height: 0; }
+.corner-ico {
+    position: absolute;
+    right: 5px;
+    top: 24px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1.4px solid #7c7c81;
+    background: #f4f4f6;
+}
+.corner-ico::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    border-radius: 50%;
+    border: 1px solid #7c7c81;
+}
+
+/* 伤药 292.5,218.8 119.9×103.2（相对右栏 15.1,217.8） */
+.potion-box {
+    position: absolute;
+    left: 15.1px;
+    top: 217.8px;
+    width: 119.9px;
+    height: 103.2px;
+    background: var(--ink);
+    border-radius: 5px;
+    padding: 14.8px 6px 6.7px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.potion-box .box-top {
+    left: 0;
+    width: 100%;
+    height: 21.7px;
+    background: transparent;
+}
+.potion-box .box-top::after { bottom: 9px; }
+.prow { display: flex; align-items: center; gap: 0; }
+.plabel {
+    flex: none;
+    width: 30px;
+    font-size: 7.5px;
+    white-space: nowrap;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.05;
+    letter-spacing: .2px;
+}
+.pmul { flex: none; width: 7px; font-size: 8px; font-weight: 700; color: #fff; opacity: .85; }
+/* 剩余点数记录框：与左边数量框同款式 */
+.prem {
+    flex: none;
+    margin-left: auto;
+    width: 30px;
+    height: 25.2px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 2.5px 3px 0;
+    display: flex;
+    flex-direction: column;
+    font-size: 5.4px;
+    font-weight: 800;
+    color: #841722;
+    letter-spacing: .2px;
+    line-height: 1;
+}
+.prem input { width: 100%; font-size: 9px; margin-top: 1px; text-align: center; color: var(--ink); }
+.pcount {
+    flex: none;
+    width: 27.7px;
+    height: 25.2px;
+    margin-left: 0;
+    background: #fff;
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+}
+.pcount input { width: 100%; text-align: center; font-size: 12px; font-weight: 700; }
+
+/* 备注 417.6,218.8 119.9×103.2（相对右栏 140.2,217.8） */
+.note-box {
+    position: absolute;
+    left: 138.7px;
+    top: 216.3px;
+    width: 122.9px;
+    height: 106.2px;
+    background: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 5px;
+}
+.note-box .box-top { height: 18.7px; }
+.note-box .corner-ico { top: 21px; right: 4px; }
+.sheet .note-box textarea {
+    position: absolute;
+    left: 5px;
+    top: 21px;
+    width: 105px;
+    height: 74px;
+    font-size: 8px;
+    line-height: 15px;
+    background-image: linear-gradient(to bottom, #d5d5da 0 1px, transparent 1px);
+    background-size: 100% 15px;
+    background-repeat: repeat-y;
+}
+
+/* 徽章盒标签 361.7,329.3 96.4×32.7 */
+.badge-tab {
+    position: absolute;
+    left: 84.3px;
+    top: 328.3px;
+    width: 96.4px;
+    height: 32.7px;
+    background: #545353;
+    border-radius: 8px 8px 0 0;
+    color: #fff;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 5px;
+    line-height: 1;
+}
+
+/* 徽章盒 279.4,343.6 260.9×37.7 */
+.badge-case {
+    position: absolute;
+    left: 2px;
+    top: 342.6px;
+    width: 260.9px;
+    height: 37.7px;
+    background: var(--ink);
+    border-radius: 9px;
+    padding: 4.2px 4.2px;
+    display: flex;
+    gap: 2.8px;
+}
+.bcell {
+    flex: 1;
+    background: #fff;
+    border-radius: 4px;
+}
+
+/* ============================================================
+ * 宝可梦 · 正面   548.0 × 383.8
+ * ============================================================ */
+
+/* 美术区 3.3,0 266.1×340.6 */
+.pf-art {
+    position: absolute;
+    left: 0;
+    top: 1.5px;
+    width: 272px;
+    height: 339px;
+    overflow: hidden;
+    background: #fff;
+}
+/* 美术区右侧的白色细脊线 */
+.pf-art::after {
+    content: "";
+    position: absolute;
+    left: 262px;
+    top: 0;
+    width: 1.5px;
+    height: 260px;
+    background: #fff;
+}
+.pf-grad::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 1.5px;
+    background: #fff;
+}
+.pf-grad {
+    position: absolute;
+    left: 4px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(112% 90% at 50% 100%, #ffffff 0%, #ffffff 30%, #edf6fd 48%, #d5eaf8 68%, #a8d4f1 100%);
+}
+.pf-art img {
+    position: absolute;
+    left: 4%;
+    top: 4%;
+    width: 92%;
+    height: 88%;
+    object-fit: contain;
+}
+
+/* 名字 / 特性 斜切条：贴左，右端斜切，标签压在斜角外 */
+.pf-bar {
+    position: absolute;
+    height: 25px;
+    width: 195px;
+}
+.pf-bar.b1 { left: 10px; top: 10px; height: 16.5px; border-bottom: 1.5px solid #fff; }
+.pf-bar.b2 { left: 10px; top: 27.5px; width: 167px; height: 19px; border-bottom: 1.5px solid #fff; }
+.pf-bar .bx {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(120, 185, 228, .88), rgba(228, 244, 253, .96));
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 100%, 0 100%);
+}
+.pf-bar input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(100% - 30px);
+    height: 100%;
+    padding: 0 8px;
+    font-size: 10px;
+    color: #2a6f96;
+}
+.pf-bar span {
+    position: absolute;
+    left: calc(100% + 4px);
+    top: 8px;
+    font-size: 7px;
+    font-weight: 800;
+    color: #3b87b8;
+    letter-spacing: .5px;
+    white-space: nowrap;
+}
+.pf-bar.b2 span { top: 11px; }
+
+/* 底部红色包边（大圆弧）—— 与美术区下缘同一条曲线 */
+.pf-bulge {
+    position: absolute;
+    left: 0;
+    top: 260.4px;
+    width: 273.1px;
+    height: 123.4px;
+    display: block;
+}
+.bulge-fill { fill: var(--red); }
+.bulge-band { fill: none; stroke: #a21c1c; stroke-width: 7; }
+
+/* 铆钉 26.8 外圈 / 23.7 中圈 / 19.6 高光 */
+.rivet {
+    position: absolute;
+    width: 26.8px;
+    height: 26.8px;
+    border-radius: 50%;
+    background: #b33d25;
+}
+.rivet::before,
+.rivet::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+}
+.rivet::before {
+    left: 1.5px;
+    top: 1.5px;
+    width: 23.7px;
+    height: 23.7px;
+    background: #00a7bd;
+}
+.rivet::after {
+    left: 3.6px;
+    top: 3.6px;
+    width: 19.6px;
+    height: 19.6px;
+    background: radial-gradient(circle at 34% 28%, #ffffff 0 12%, #8fe3ec 26%, #5ac0ce 60%, #1795ad 100%);
+}
+.rivet.r1 { left: 23.2px; top: 315.8px; }
+.rivet.r2 { left: 220.9px; top: 315.8px; }
+.rivet.r3 { left: 53px; top: 345.3px; }
+.rivet.r4 { left: 191.1px; top: 345.3px; }
+
+/* --- 右半 --- */
+.pf-right {
+    position: absolute;
+    left: 274.9px;
+    top: 1.2px;
+    width: 273.1px;
+    height: 382.6px;
+}
+
+/* 能力 300.2,22.7 139.8×32.6 ×5，节距 38 */
+.pf-attrs {
+    position: absolute;
+    left: 23.8px;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.4px;
+}
+.attr.big {
+    width: 142.8px;
+    height: 35.6px;
+    background: var(--teal);
+    border: 3px solid var(--line);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #fff;
+}
+.attr.big b { font-size: 9.8px; font-weight: 800; letter-spacing: .6px; line-height: 1; }
+.attr.big .pips { gap: 1.4px; }
+.attr.big .pip { width: 9px; height: 9px; border-width: 1px; }
+
+/* 技能列 453.1,21.3 59.3×223.8 */
+.pf-skills {
+    position: absolute;
+    left: 178.2px;
+    top: 20.1px;
+    width: 59.3px;
+    height: 223.8px;
+    background: var(--wine);
+    border-radius: 9px;
+    color: #fff;
+}
+.pf-skills .g1 { top: 2.8px; }
+.pf-skills .g2 { top: 65.1px; }
+.pf-skills .g3 { top: 127.3px; }
+.pf-skills .t1 { top: 0; height: 59.1px; }
+.pf-skills .t2 { top: 63px; height: 59.1px; }
+.pf-skills .t3 { top: 126px; height: 59.1px; }
+.pf-skills .t4 { top: 189px; height: 34.8px; }
+.pf-skills .skill b { font-size: 6.8px; line-height: 8.6px; height: 8.6px; }
+.pf-skills .skill { height: 14px; }
+.pf-skills .skill .pip { width: 4.4px; height: 4.4px; border-width: .9px; }
+.pf-skills .skill .pips { gap: 1.6px; height: 5px; }
+
+/* 额外技能（技能列底部） 458.2,213.3 49.5×15.9 */
+.pf-extra {
+    position: absolute;
+    left: 5.1px;
+    top: 192px;
+    width: 49.5px;
+    height: 34px;
+}
+.sheet .pf-extra input {
+    width: 49.5px;
+    height: 15.9px;
+    background: #fff;
+    border-radius: 4px;
+    font-size: 7.5px;
+    text-align: center;
+    color: var(--ink);
+}
+.pf-extra .pips { height: 6.2px; margin-top: 4.4px; gap: 1.8px; }
+.pf-extra .pip { width: 6.2px; height: 6.2px; border-width: 1px; }
+
+/* 体型 / 体重 298.6,213.3 142.9×31.8 */
+.pf-size {
+    position: absolute;
+    left: 23.7px;
+    top: 212.1px;
+    width: 142.9px;
+    height: 31.8px;
+    background: var(--wine);
+    border-radius: 7px;
+}
+.pf-size label {
+    position: absolute;
+    top: 3.7px;
+    width: 65.2px;
+    height: 24.3px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 2.5px 5px 0;
+    display: flex;
+    flex-direction: column;
+    font-size: 8px;
+    font-weight: 800;
+    color: #841722;
+    letter-spacing: .3px;
+    line-height: 1;
+}
+.pf-size label:first-child { left: 4px; }
+.pf-size label:last-child { left: 73.5px; }
+.pf-size input { width: 100%; font-size: 8.5px; margin-top: 2px; color: var(--ink); }
+
+/* 背包 / 特性 298.6,249.6 227.5×89.4 */
+.pf-bottom {
+    position: absolute;
+    left: 23.7px;
+    top: 248.4px;
+    width: 227.5px;
+    height: 89.4px;
+    background: var(--wine);
+    border-radius: 7px;
+}
+.pf-bag,
+.pf-inst {
+    position: absolute;
+    top: 16.3px;
+    width: 105.6px;
+    height: 68.3px;
+}
+.pf-bag { left: 4.9px; }
+.pf-inst { left: 116.8px; }
+.pf-bag .hd,
+.pf-inst .hd {
+    position: absolute;
+    left: 0;
+    top: -12.4px;
+    width: 105.6px;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .8px;
+    color: #fff;
+    line-height: 1;
+}
+.pf-bag .box,
+.pf-inst .box {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border-radius: 4px;
+}
+.sheet .pf-inst textarea {
+    width: 100%;
+    height: 100%;
+    padding: 4px 6px;
+    font-size: 8px;
+    line-height: 13px;
+    color: var(--ink);
+}
+.sheet .pf-bag textarea {
+    width: 100%;
+    height: 100%;
+    padding: 0 6px;
+    font-size: 8px;
+    line-height: 14px;
+    color: var(--ink);
+    background-image: linear-gradient(to bottom, #d5d5da 0 1px, transparent 1px);
+    background-size: 100% 14px;
+    background-repeat: repeat-y;
+    background-position: 0 13px;
+}
+.pf-foot {
+    position: absolute;
+    left: 0;
+    top: 343.2px;
+    width: 227.5px;
+    text-align: center;
+    font-size: 6px;
+    letter-spacing: .6px;
+    color: #fff;
+    line-height: 1;
+}
+
+/* ============================================================
+ * 宝可梦 · 背面   548.0 × 386.5
+ * ============================================================ */
+.pb-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 273.2px;
+    height: 386.5px;
+    background: var(--red);
+}
+.pb-right {
+    position: absolute;
+    left: 274.9px;
+    top: 0.7px;
+    width: 273.1px;
+    height: 385.8px;
+    background: var(--red);
+}
+
+/* HP / 意志 / 等级 7.3,19.9 82.3×31.3 */
+.pb-stats {
+    position: absolute;
+    left: 7.3px;
+    top: 19.9px;
+    display: flex;
+    gap: 5.7px;
+}
+.pb-stats .stat { background: var(--line); border-radius: 5px; }
+.pb-stats .stat b { font-size: 7.5px; }
+
+/* 六项小字段 7.6,56 / 72.9 81.7×14.1 */
+.pb-mini {
+    position: absolute;
+    left: 7.6px;
+    top: 56px;
+    display: grid;
+    grid-template-columns: 81.7px 81.7px 81.7px;
+    column-gap: 6.3px;
+    row-gap: 2.8px;
+}
+.pb-mini label {
+    position: relative;
+    height: 14.1px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 4px 0 5px;
+    font-size: 6.4px;
+    font-weight: 800;
+    color: #841722;
+    letter-spacing: .1px;
+    line-height: 1;
+}
+.pb-mini label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--line);
+    border-radius: 2.5px;
+}
+.pb-mini label::after {
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    background: #fff;
+    border-radius: 1.5px;
+}
+.pb-mini label i,
+.pb-mini label input { position: relative; z-index: 1; }
+.pb-mini label i { font-style: normal; flex: none; }
+.pb-mini input { flex: 1; width: auto; font-size: 7.5px; color: var(--ink); }
+
+/* 分隔线 0,97.2 */
+.pb-hr {
+    position: absolute;
+    left: 0;
+    top: 97.2px;
+    width: 273.2px;
+    height: 6.9px;
+    background: #fff;
+}
+.pb-hr::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 100%;
+    height: 4.2px;
+    background: var(--line);
+}
+
+/* 招式标题 0,112.5 273.2×30.5 */
+.pb-moveshead {
+    position: absolute;
+    left: 0;
+    top: 112.5px;
+    width: 273.2px;
+    height: 30.5px;
+    background: #a21c1c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+}
+
+/* 招式 14/139 × 149/224/299  120×71 */
+.moves-grid {
+    position: absolute;
+    left: 14px;
+    top: 149px;
+    display: grid;
+    grid-template-columns: 120px 120px;
+    column-gap: 5px;
+    row-gap: 4px;
+}
+.move {
+    width: 120px;
+    height: 71px;
+    background: var(--line);
+    border-radius: 5px;
+    padding: 3.1px 3.2px 3.2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.8px;
+}
+.move .mhead {
+    display: flex;
+    height: 11.1px;
+    flex: none;
+    background: #fff;
+    border-radius: 2px;
+    overflow: hidden;
+}
+.move .mname {
+    flex: 1;
+    min-width: 0;
+    font-size: 7.5px;
+    padding: 0 3px;
+}
+.move .pl {
+    flex: none;
+    width: 22px;
+    text-align: right;
+    font-size: 4.6px;
+    font-weight: 800;
+    color: #433727;
+    letter-spacing: .2px;
+    line-height: 11.1px;
+}
+.move .mbody {
+    flex: 1;
+    display: flex;
+    gap: 3px;
+    min-height: 0;
+    background: #fff;
+    border-radius: 2px;
+    padding: 2px 3px 3px;
+}
+.move .mfields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 1px;
+}
+.move .mfields label {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 5.2px;
+    font-weight: 800;
+    color: #433727;
+    height: 11px;
+    border-bottom: 1px solid #dfdfe2;
+}
+.move .mfields input { flex: 1; min-width: 0; font-size: 6.6px; height: 10px; }
+.move .mchecks {
+    flex: none;
+    width: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.move .mchecks .chk { width: 12px; height: 12px; border-width: 1.2px; }
+
+/* --- 右半 --- */
+.pb-contest {
+    position: absolute;
+    left: 26.9px;
+    top: 26.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 3.8px;
+}
+/* 性格 372.6,27.3 149.2×52.9 */
+.pb-nature {
+    position: absolute;
+    left: 97.7px;
+    top: 26.6px;
+    width: 149.2px;
+    height: 52.9px;
+    background: var(--brown);
+    border-radius: 7px;
+}
+.pb-nature .nb1,
+.pb-nature .nb2 {
+    position: absolute;
+    left: 3.2px;
+    width: 142.7px;
+    background: #fff;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+}
+.pb-nature .nb1 { top: 3px; height: 24.7px; padding: 0 6px; gap: 4px; }
+.pb-nature .nb2 { top: 31.9px; height: 17.4px; padding: 0 6px; }
+.pb-nature b { font-size: 10px; color: var(--ink); letter-spacing: .4px; flex: none; line-height: 1; }
+.pb-nature input { flex: 1; width: auto; font-size: 9px; }
+
+/* 幸福度 / 忠诚度 374.1,88 63.5×53.9 */
+.pb-happy {
+    position: absolute;
+    left: 97.7px;
+    top: 85.8px;
+    width: 66.5px;
+    height: 56.9px;
+    background: var(--teal);
+    border: 3px solid var(--line);
+    border-radius: 8px;
+    padding: 4px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+}
+.pb-happy b { font-size: 6.4px; font-weight: 800; letter-spacing: .3px; line-height: 1; }
+.pb-happy .pips { gap: 1.5px; }
+.pb-happy .pip { width: 5px; height: 5px; border-width: 1px; }
+
+/* 羁绊 / 训练点 446.1,86.5 74.8×57 */
+.pb-bond {
+    position: absolute;
+    left: 171.2px;
+    top: 85.8px;
+    width: 74.8px;
+    height: 57px;
+    background: var(--wine);
+    border-radius: 7px;
+}
+.pb-bond .bl {
+    position: absolute;
+    left: 4.2px;
+    width: 66.8px;
+    text-align: center;
+    font-size: 6.4px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: .2px;
+    line-height: 1;
+}
+.pb-bond .bl { top: 4.2px; }
+.pb-bond .bl.b2 { top: 30.2px; }
+.pb-bond .bbox {
+    position: absolute;
+    left: 4.2px;
+    width: 66.8px;
+    height: 15.6px;
+    background: #fff;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+}
+.pb-bond .bbox { top: 11.3px; }
+.pb-bond .bbox.b2 { top: 37.3px; }
+.pb-bond input { width: 100%; font-size: 8px; color: var(--ink); }
+
+/* 随身物品 372.6,149.8 148.3×62.5 */
+.pb-acc {
+    position: absolute;
+    left: 97.7px;
+    top: 149.1px;
+    width: 148.3px;
+    height: 62.5px;
+    background: #a21c1c;
+    border-radius: 7px;
+}
+.pb-acc .acc-box {
+    position: absolute;
+    left: 5px;
+    top: 4.9px;
+    width: 138.6px;
+    height: 28.5px;
+    background: #fff;
+    border-radius: 5px;
+    padding: 2.5px 6px 0;
+    display: flex;
+    flex-direction: column;
+}
+.pb-acc .hd {
+    position: relative;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    color: #841722;
+    line-height: 1;
+}
+.pb-acc .acc-box input { width: 100%; font-size: 9px; height: 14px; color: var(--ink); margin-top: 1px; }
+.acc-circles {
+    position: absolute;
+    left: 4.5px;
+    top: 37.1px;
+    display: flex;
+    gap: 7.1px;
+}
+.acc-circles i {
+    width: 21.9px;
+    height: 21.9px;
+    background: #fff;
+    border-radius: 5px;
+}
+
+/* 属性 / 弱点 301.7,220.2 220.1×29.8 */
+.pb-tw {
+    position: absolute;
+    left: 26.8px;
+    top: 219.5px;
+    width: 220.1px;
+    height: 29.8px;
+    background: #a21c1c;
+    border-radius: 6px;
+}
+.pb-tw label {
+    position: absolute;
+    top: 2.7px;
+    height: 24.3px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 3px 6px 0;
+    display: flex;
+    flex-direction: column;
+    font-size: 8px;
+    font-weight: 800;
+    color: #841722;
+    letter-spacing: .4px;
+    line-height: 1;
+}
+.pb-tw label:first-child { left: 3.1px; width: 102.2px; }
+.pb-tw label:last-child { left: 114.2px; width: 102.9px; }
+.pb-tw input { width: 100%; font-size: 8.5px; margin-top: 2px; color: var(--ink); }
+
+/* 备注 301.7,256.2 220.1×103.7 */
+.pb-notes {
+    position: absolute;
+    left: 26.8px;
+    top: 255.5px;
+    width: 220.1px;
+    height: 103.7px;
+    background: #a21c1c;
+    border-radius: 7px;
+}
+.pb-notes .hd {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #fff;
+    line-height: 12px;
+}
+.sheet .pb-notes textarea {
+    position: absolute;
+    left: 5.5px;
+    top: 16px;
+    width: 209.2px;
+    height: 83.1px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 0 7px;
+    font-size: 8.5px;
+    line-height: 14px;
+    color: var(--ink);
+    background-image: linear-gradient(to bottom, #d8d8dc 0 1px, transparent 1px);
+    background-size: 100% 14px;
+    background-repeat: repeat-y;
+    background-position: 0 13px;
+}
+
+/* 招式头顶的威力值（PDF 里只有 POWER 字样，这里补一个可填格） */
+.sheet .move .pwr {
+    flex: none;
+    width: 15px;
+    font-size: 6.4px;
+    text-align: center;
+    background: #f1f1f4;
+    border-left: 1px solid #d5d5da;
+    border-radius: 0 2px 2px 0;
+}

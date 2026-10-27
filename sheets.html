@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色卡 · 宝可梦TRPG 规则书</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/sheets.css?v=20261027c">
+</head>
+<body class="cs-page">
+
+    <header class="cs-bar">
+        <a href="index.html">← 规则书</a>
+        <h1>角色卡</h1>
+        <span class="spacer"></span>
+        <button class="cs-tab" id="btnExport" type="button">保存为图片</button>
+    </header>
+
+    <div class="cs-wrap">
+        <div class="cs-tabs" role="tablist">
+            <button class="cs-tab" role="tab" aria-selected="true" data-view="tf">训练家 · 正面</button>
+            <button class="cs-tab" role="tab" aria-selected="false" data-view="tb">训练家 · 背面</button>
+            <button class="cs-tab" role="tab" aria-selected="false" data-view="pf">宝可梦 · 正面</button>
+            <button class="cs-tab" role="tab" aria-selected="false" data-view="pb">宝可梦 · 背面</button>
+        </div>
+
+        <div class="cs-subbar" id="slotBar" hidden>
+            <span class="lbl">队伍中的第</span>
+            <button class="cs-slot" data-slot="0" aria-pressed="true">1</button>
+            <button class="cs-slot" data-slot="1" aria-pressed="false">2</button>
+            <button class="cs-slot" data-slot="2" aria-pressed="false">3</button>
+            <button class="cs-slot" data-slot="3" aria-pressed="false">4</button>
+            <button class="cs-slot" data-slot="4" aria-pressed="false">5</button>
+            <button class="cs-slot" data-slot="5" aria-pressed="false">6</button>
+            <span class="lbl">只</span>
+        </div>
+
+        <div class="sheet-stage" id="stage">
+
+            <!-- ==========================================================
+                 训练家 · 正面   画布 550.5 × 386.8（PDF 634 上半）
+                 坐标全部为卡内绝对坐标，来源 sheet-layout.json
+                 ========================================================== -->
+            <div class="sheet tf" id="sheet-tf" data-card="tf">
+
+                <!-- 左半：执照底板 0,0 273.1×385.8 -->
+                <div class="tf-ink"></div>
+
+                <!-- 左上角大精灵球：上半红 1.7~57.2，赤道带 57.2~66.5，下半白 66.5~122 -->
+                <div class="tf-ball"></div>
+
+                <!-- 训练家执照白卡 8.8,96 255.4×270.1（顶端为拱形，上沿深红描边） -->
+                <div class="tf-lic">
+                    <div class="tf-photo"></div>
+                </div>
+                <svg class="tf-arc" viewBox="0 0 255.4 120" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M 23.8 52 A 124.7 105 0 0 1 231.6 52" fill="none" stroke="#a11d1d" stroke-width="6"/>
+                </svg>
+
+                <!-- 两条签名条：19.5,326.1 / 25.3,346.3，均 204.8×14.9 -->
+                <div class="tf-bar b1">
+                    <i class="bx"></i>
+                    <input type="text" data-f="name" aria-label="训练家姓名">
+                    <span>姓名</span>
+                </div>
+                <div class="tf-bar b2">
+                    <i class="bx"></i>
+                    <input type="text" data-f="player" aria-label="玩家名">
+                    <span>玩家</span>
+                </div>
+
+                <!-- 红色精灵球徽章 13.8,323 31.6×41.8 -->
+                <div class="tf-seal"></div>
+
+                <!-- 标题：Pokemon League 57/37.6 · Trainer's Licence 77.6/56.1 -->
+                <div class="tf-title">
+                    <b>宝可梦联盟</b>
+                    <span>训练家执照</span>
+                </div>
+
+                <!-- 右半：纸面 277.4,0 273.1×386.7 -->
+                <div class="tf-right">
+                    <!-- 属性胶囊底板 288.3,19.5 93.5×191 -->
+                    <div class="tf-gray"></div>
+
+                    <!-- 能力框 298.7,28.1 72.1×32.6 ×4（节距 46.9） -->
+                    <div class="tf-attrs">
+                        <div class="attr"><b>力量</b><div class="pips" data-pips="str" data-max="5"></div></div>
+                        <div class="attr"><b>敏捷</b><div class="pips" data-pips="dex" data-max="5"></div></div>
+                        <div class="attr"><b>耐力</b><div class="pips" data-pips="vit" data-max="5"></div></div>
+                        <div class="attr"><b>洞察</b><div class="pips" data-pips="ins" data-max="5"></div></div>
+                    </div>
+
+                    <!-- 华丽度框 393.7,27.3 63.5×31.2 ×5（节距 38） -->
+                    <div class="tf-contest">
+                        <div class="contest c-tough"><b>强壮</b><div class="pips" data-pips="cTough" data-max="5"></div></div>
+                        <div class="contest c-cool"><b>帅气</b><div class="pips" data-pips="cCool" data-max="5"></div></div>
+                        <div class="contest c-beauty"><b>美丽</b><div class="pips" data-pips="cBeauty" data-max="5"></div></div>
+                        <div class="contest c-cute"><b>可爱</b><div class="pips" data-pips="cCute" data-max="5"></div></div>
+                        <div class="contest c-clever"><b>聪明</b><div class="pips" data-pips="cClever" data-max="5"></div></div>
+                    </div>
+
+                    <!-- 技能酒红列 468.7,19.5 59.3×262.1 -->
+                    <div class="tf-skills">
+                        <div class="sgroup g1">
+                            <div class="skill"><b>斗殴</b><div class="pips" data-pips="brawl" data-max="5"></div></div>
+                            <div class="skill"><b>制导</b><div class="pips" data-pips="channel" data-max="5"></div></div>
+                            <div class="skill"><b>冲抵</b><div class="pips" data-pips="clash" data-max="5"></div></div>
+                            <div class="skill"><b>闪避</b><div class="pips" data-pips="evasion" data-max="5"></div></div>
+                        </div>
+                        <div class="sgroup g2">
+                            <div class="skill"><b>警觉</b><div class="pips" data-pips="alert" data-max="5"></div></div>
+                            <div class="skill"><b>运动</b><div class="pips" data-pips="athletic" data-max="5"></div></div>
+                            <div class="skill"><b>生存</b><div class="pips" data-pips="nature" data-max="5"></div></div>
+                            <div class="skill"><b>潜行</b><div class="pips" data-pips="stealth" data-max="5"></div></div>
+                        </div>
+                        <div class="sgroup g3">
+                            <div class="skill"><b>共情</b><div class="pips" data-pips="empathy" data-max="5"></div></div>
+                            <div class="skill"><b>礼仪</b><div class="pips" data-pips="etiquette" data-max="5"></div></div>
+                            <div class="skill"><b>威吓</b><div class="pips" data-pips="intimidate" data-max="5"></div></div>
+                            <div class="skill"><b>表演</b><div class="pips" data-pips="perform" data-max="5"></div></div>
+                        </div>
+                        <div class="sgroup g4">
+                            <div class="skill"><b>工艺</b><div class="pips" data-pips="crafts" data-max="5"></div></div>
+                            <div class="skill"><b>传说</b><div class="pips" data-pips="lore" data-max="5"></div></div>
+                            <div class="skill"><b>医术</b><div class="pips" data-pips="medicine" data-max="5"></div></div>
+                            <div class="skill"><b>科学</b><div class="pips" data-pips="science" data-max="5"></div></div>
+                        </div>
+
+                        <span class="stab t1">对战</span>
+                        <span class="stab t2">生存</span>
+                        <span class="stab t3">社交</span>
+                        <span class="stab t4">知识</span>
+                    </div>
+
+                    <!-- 性格 / 概念 287.2,217.7 176.8×52.9 -->
+                    <div class="tf-nc">
+                        <div class="row r1"><b>性格</b><input type="text" data-f="nature" aria-label="性格"></div>
+                        <div class="row r2"><b>概念</b><input type="text" data-f="concept" aria-label="概念"></div>
+                    </div>
+
+                    <!-- 成就 287.2,276.3 176.8×93.8 -->
+                    <div class="tf-ach">
+                        <div class="hd">成就</div>
+                        <div class="body">
+                            <div class="aline">
+                                <div class="aline-text"><div class="aline-edit" contenteditable="true" data-f="ach1" data-placeholder="成就 1" aria-label="成就 1"></div></div>
+                                <button class="chk" type="button" data-chk="ach1" aria-label="成就 1 达成"></button>
+                            </div>
+                            <div class="aline">
+                                <div class="aline-text"><div class="aline-edit" contenteditable="true" data-f="ach2" data-placeholder="成就 2" aria-label="成就 2"></div></div>
+                                <button class="chk" type="button" data-chk="ach2" aria-label="成就 2 达成"></button>
+                            </div>
+                            <div class="aline">
+                                <div class="aline-text"><div class="aline-edit" contenteditable="true" data-f="ach3" data-placeholder="成就 3" aria-label="成就 3"></div></div>
+                                <button class="chk" type="button" data-chk="ach3" aria-label="成就 3 达成"></button>
+                            </div>
+                            <div class="aline">
+                                <div class="aline-text"><div class="aline-edit" contenteditable="true" data-f="ach4" data-placeholder="成就 4" aria-label="成就 4"></div></div>
+                                <button class="chk" type="button" data-chk="ach4" aria-label="成就 4 达成"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 额外技能 469.6,287.4 59.3×81.1 -->
+                    <div class="tf-extra">
+                        <div class="col">
+                            <div class="box"><input type="text" data-f="extraName1" aria-label="额外技能 1"></div>
+                            <div class="pips" data-pips="extra1" data-max="5"></div>
+                            <div class="box b3"><input type="text" data-f="extraName2" aria-label="额外技能 2"></div>
+                            <div class="pips" data-pips="extra2" data-max="5"></div>
+                        </div>
+                        <span class="gname">额外</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 训练家 · 背面   画布 550.2 × 386.8（PDF 634 下半）
+                 ========================================================== -->
+            <div class="sheet tb" id="sheet-tb" data-card="tb" hidden>
+
+                <div class="tb-left-paper"></div>
+
+                <div class="tb-paper"></div>
+
+                <!-- HP / 意志 / 等级 7.8,17.9 82.3×31.3（节距 88.7） -->
+                <div class="tb-stats">
+                    <div class="stat"><b>HP</b><input type="text" data-f="hp" aria-label="HP"></div>
+                    <div class="stat"><b>意志</b><input type="text" data-f="will" aria-label="意志"></div>
+                    <div class="stat"><b>等级</b><input type="text" data-f="rank" aria-label="等级"></div>
+                </div>
+
+                <!-- 年龄 / 金钱 10.1,53.3 80×39.3 与 96.5,53.3 172.3×39.3 -->
+                <div class="tb-am">
+                    <label class="am age"><b>年龄</b><input type="text" data-f="age" aria-label="年龄"></label>
+                    <label class="am money"><b>金钱</b><input type="text" data-f="money" aria-label="金钱"></label>
+                </div>
+
+                <!-- 分隔线 0.3,97.3 -->
+                <div class="tb-hr"></div>
+
+                <!-- POKEMON TEAM 0.3,115.1 273.2×18 -->
+                <div class="tb-teamhead">宝可梦队伍</div>
+
+                <div class="team-grid" id="teamGrid"></div>
+
+                <!-- 右半：背包 277.4,1 273.1×385.8 -->
+                <div class="tb-right">
+
+                    <div class="tb-baghead">背包</div>
+
+                    <!-- 背包框 290.4,30.5 247.1×181.1 -->
+                    <div class="bag-box">
+                        <i class="box-top"></i>
+                        <div class="bag-cols">
+                            <textarea class="bag-col" data-f="bagL" aria-label="背包左栏"></textarea>
+                            <textarea class="bag-col" data-f="bagR" aria-label="背包右栏"></textarea>
+                        </div>
+                        <span class="corner-ico"></span>
+                    </div>
+
+                    <!-- 伤药 292.5,218.8 119.9×103.2 -->
+                    <div class="potion-box">
+                        <i class="box-top dots-top"></i>
+                        <div class="prow">
+                            <span class="plabel">伤药</span>
+                            <span class="pmul">×</span>
+                            <div class="pcount"><input type="text" data-f="potionN" aria-label="伤药数量"></div>
+                            <label class="prem"><i>剩余</i><input type="text" data-f="potionRemain" aria-label="伤药剩余"></label>
+                        </div>
+                        <div class="prow">
+                            <span class="plabel">好伤药</span>
+                            <span class="pmul">×</span>
+                            <div class="pcount"><input type="text" data-f="superN" aria-label="好伤药数量"></div>
+                            <label class="prem"><i>剩余</i><input type="text" data-f="superRemain" aria-label="好伤药剩余"></label>
+                        </div>
+                        <div class="prow">
+                            <span class="plabel">厉害伤药</span>
+                            <span class="pmul">×</span>
+                            <div class="pcount"><input type="text" data-f="hyperN" aria-label="厉害伤药数量"></div>
+                            <label class="prem"><i>剩余</i><input type="text" data-f="hyperRemain" aria-label="厉害伤药剩余"></label>
+                        </div>
+                    </div>
+
+                    <!-- 备注 417.6,218.8 119.9×103.2 -->
+                    <div class="note-box">
+                        <i class="box-top"></i>
+                        <span class="corner-ico"></span>
+                        <textarea data-f="bagNote" aria-label="备注" rows="4"></textarea>
+                    </div>
+
+                    <!-- 徽章盒标签 361.7,329.3 96.4×32.7 -->
+                    <div class="badge-tab">徽章盒</div>
+
+                    <!-- 徽章盒 279.4,343.6 260.9×37.7 -->
+                    <div class="badge-case">
+                        <i class="bcell"></i><i class="bcell"></i><i class="bcell"></i><i class="bcell"></i>
+                        <i class="bcell"></i><i class="bcell"></i><i class="bcell"></i><i class="bcell"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 宝可梦 · 正面   画布 548.0 × 383.8（PDF 635 上半）
+                 ========================================================== -->
+            <div class="sheet pf" id="sheet-pf" data-card="pf" hidden>
+
+                <!-- 美术区 3.3,0 266.1×340.6 -->
+                <div class="pf-art">
+                    <div class="pf-grad"></div>
+                    <img id="monArt" alt="" hidden>
+
+                    <!-- 名字 / 特性 斜切白条 -->
+                    <div class="pf-bar b1">
+                        <i class="bx"></i>
+                        <input type="text" data-f="nick" aria-label="名字">
+                        <span>名字</span>
+                    </div>
+                    <div class="pf-bar b2">
+                        <i class="bx"></i>
+                        <input type="text" data-f="ability" aria-label="特性">
+                        <span>特性</span>
+                    </div>
+                </div>
+
+                <!-- 底部红色包边（大圆弧，弧线 y=3.85 起，矢高 57.5） -->
+                <svg class="pf-bulge" viewBox="0 0 273.1 123.4" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="bulge-fill" d="M0 3.85 H46 A100 87.8 0 0 0 234 3.85 H273.1 V123.4 H0 Z"/>
+                    <path class="bulge-band" d="M16.8 7.05 H46 A100 87.8 0 0 0 234 7.05 H256.8"/>
+                </svg>
+
+                <!-- 四颗铆钉 -->
+                <i class="rivet r1"></i><i class="rivet r2"></i>
+                <i class="rivet r3"></i><i class="rivet r4"></i>
+
+                <!-- 右半 274.9,1.2 273.1×382.6 -->
+                <div class="pf-right">
+
+                    <!-- 能力框 300.2,22.7 139.8×32.6 ×5（节距 38） -->
+                    <div class="pf-attrs">
+                        <div class="attr big"><b>力量</b><div class="pips" data-pips="str" data-max="10"></div></div>
+                        <div class="attr big"><b>敏捷</b><div class="pips" data-pips="dex" data-max="10"></div></div>
+                        <div class="attr big"><b>耐力</b><div class="pips" data-pips="vit" data-max="10"></div></div>
+                        <div class="attr big"><b>特殊</b><div class="pips" data-pips="spc" data-max="10"></div></div>
+                        <div class="attr big"><b>洞察</b><div class="pips" data-pips="ins" data-max="10"></div></div>
+                    </div>
+
+                    <!-- 技能列 453.1,21.3 59.3×223.8 -->
+                    <div class="pf-skills">
+                        <div class="sgroup g1">
+                            <div class="skill"><b>斗殴</b><div class="pips" data-pips="brawl" data-max="5"></div></div>
+                            <div class="skill"><b>制导</b><div class="pips" data-pips="channel" data-max="5"></div></div>
+                            <div class="skill"><b>冲抵</b><div class="pips" data-pips="clash" data-max="5"></div></div>
+                            <div class="skill"><b>闪避</b><div class="pips" data-pips="evasion" data-max="5"></div></div>
+                        </div>
+                        <div class="sgroup g2">
+                            <div class="skill"><b>警觉</b><div class="pips" data-pips="alert" data-max="5"></div></div>
+                            <div class="skill"><b>运动</b><div class="pips" data-pips="athletic" data-max="5"></div></div>
+                            <div class="skill"><b>生存</b><div class="pips" data-pips="nature" data-max="5"></div></div>
+                            <div class="skill"><b>潜行</b><div class="pips" data-pips="stealth" data-max="5"></div></div>
+                        </div>
+                        <div class="sgroup g3">
+                            <div class="skill"><b>魅力</b><div class="pips" data-pips="charm" data-max="5"></div></div>
+                            <div class="skill"><b>礼仪</b><div class="pips" data-pips="etiquette" data-max="5"></div></div>
+                            <div class="skill"><b>威吓</b><div class="pips" data-pips="intimidate" data-max="5"></div></div>
+                            <div class="skill"><b>表演</b><div class="pips" data-pips="perform" data-max="5"></div></div>
+                        </div>
+
+                        <div class="pf-extra">
+                            <input type="text" data-f="extraName" aria-label="额外技能名">
+                            <div class="pips" data-pips="extra" data-max="5"></div>
+                        </div>
+
+                        <span class="stab t1">对战</span>
+                        <span class="stab t2">生存</span>
+                        <span class="stab t3">社交</span>
+                        <span class="stab t4">额外</span>
+                    </div>
+
+                    <!-- 体型 / 体重 298.6,213.3 142.9×31.8 -->
+                    <div class="pf-size">
+                        <label><b>体型</b><input type="text" data-f="size" aria-label="体型"></label>
+                        <label><b>体重</b><input type="text" data-f="weight" aria-label="体重"></label>
+                    </div>
+
+                    <!-- 背包 / 特性 298.6,249.6 227.5×89.4 -->
+                    <div class="pf-bottom">
+                        <div class="pf-bag">
+                            <div class="hd">背包</div>
+                            <div class="box"><textarea data-f="pbag" aria-label="背包"></textarea></div>
+                        </div>
+                        <div class="pf-inst">
+                            <div class="hd">特性</div>
+                            <div class="box"><textarea data-f="instinct" aria-label="特性"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="pf-foot">（仅在不可思议迷宫规则下使用）</div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 宝可梦 · 背面   画布 548.0 × 386.5（PDF 635 下半）
+                 ========================================================== -->
+            <div class="sheet pb" id="sheet-pb" data-card="pb" hidden>
+
+                <div class="pb-bg"></div>
+
+                <!-- HP / 意志 / 等级 7.3,19.9 82.3×31.3（节距 88） -->
+                <div class="pb-stats">
+                    <div class="stat"><b>HP</b><input type="text" data-f="hp" aria-label="HP"></div>
+                    <div class="stat"><b>意志</b><input type="text" data-f="will" aria-label="意志"></div>
+                    <div class="stat"><b>等级</b><input type="text" data-f="rank" aria-label="等级"></div>
+                </div>
+
+                <!-- 六项小字段 7.6,56 / 72.9 81.7×14.1 -->
+                <div class="pb-mini">
+                    <label><i>道具</i><input type="text" data-f="item" aria-label="道具"></label>
+                    <label><i>先攻</i><input type="text" data-f="init" aria-label="先攻"></label>
+                    <label><i>闪避</i><input type="text" data-f="evasion" aria-label="闪避"></label>
+                    <label><i>状态</i><input type="text" data-f="status" aria-label="状态"></label>
+                    <label><i>物防／特防</i><input type="text" data-f="def" aria-label="物防特防"></label>
+                    <label><i>冲抵</i><input type="text" data-f="clash" aria-label="冲抵"></label>
+                </div>
+
+                <!-- 分隔线 -->
+                <div class="pb-hr"></div>
+
+                <!-- 招式标题 0,112.5 273.2×30.5 -->
+                <div class="pb-moveshead">招式</div>
+
+                <!-- 招式 14/139, 149/224/299  120×71 -->
+                <div class="moves-grid" id="movesGrid"></div>
+
+                <!-- 右半 274.9,0.7 273.1×385.8 -->
+                <div class="pb-right">
+
+                    <!-- 华丽度 303.3,28.7 63.5×31.2 ×5（节距 38） -->
+                    <div class="pb-contest">
+                        <div class="contest c-tough"><b>强壮</b><div class="pips" data-pips="cTough" data-max="5"></div></div>
+                        <div class="contest c-cool"><b>帅气</b><div class="pips" data-pips="cCool" data-max="5"></div></div>
+                        <div class="contest c-beauty"><b>美丽</b><div class="pips" data-pips="cBeauty" data-max="5"></div></div>
+                        <div class="contest c-cute"><b>可爱</b><div class="pips" data-pips="cCute" data-max="5"></div></div>
+                        <div class="contest c-clever"><b>聪明</b><div class="pips" data-pips="cClever" data-max="5"></div></div>
+                    </div>
+
+                    <!-- 性格 372.6,27.3 149.2×52.9 -->
+                    <div class="pb-nature">
+                        <div class="nb1"><b>性格</b><input type="text" data-f="nature" aria-label="性格"></div>
+                        <div class="nb2"><input type="text" data-f="nature2" aria-label="性格补充"></div>
+                    </div>
+
+                    <!-- 幸福度 / 忠诚度 374.1,88 63.5×53.9 -->
+                    <div class="pb-happy">
+                        <b>幸福度</b><div class="pips" data-pips="happy" data-max="5"></div>
+                        <b>忠诚度</b><div class="pips" data-pips="loyal" data-max="5"></div>
+                    </div>
+
+                    <!-- 羁绊 / 训练点 446.1,86.5 74.8×57 -->
+                    <div class="pb-bond">
+                        <span class="bl">牵绊变身</span>
+                        <div class="bbox"><input type="text" data-f="bond" aria-label="牵绊变身"></div>
+                        <span class="bl b2">训练点</span>
+                        <div class="bbox b2"><input type="text" data-f="trainpt" aria-label="训练点"></div>
+                    </div>
+
+                    <!-- 随身物品 372.6,149.8 148.3×62.5 -->
+                    <div class="pb-acc">
+                        <div class="acc-box"><div class="hd">随身物品</div><input type="text" data-f="acc" aria-label="随身物品"></div>
+                        <div class="acc-circles"><i></i><i></i><i></i><i></i><i></i></div>
+                    </div>
+
+                    <!-- 属性 / 弱点 301.7,220.2 220.1×29.8 -->
+                    <div class="pb-tw">
+                        <label><i>属性</i><input type="text" data-f="type" aria-label="属性"></label>
+                        <label><i>弱点</i><input type="text" data-f="weak" aria-label="弱点"></label>
+                    </div>
+
+                    <!-- 备注 301.7,256.2 220.1×103.7 -->
+                    <div class="pb-notes">
+                        <div class="hd">备注</div>
+                        <textarea data-f="notes" aria-label="备注" rows="5"></textarea>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="assets/sheets.js?v=20261027d"></script>
+</body>
+</html>

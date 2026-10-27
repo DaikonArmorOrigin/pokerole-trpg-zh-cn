@@ -1,0 +1,12 @@
+# 统一换行符：仓库里存 LF，Windows 检出时按系统习惯处理。
+# 避免「我这边好好的，他那边的 diff 全是整文件改动」。
+* text=auto
+
+# 图片是二进制，禁止任何换行转换（转了就损坏）
+*.webp binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

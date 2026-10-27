@@ -1,0 +1,12 @@
+招式威力为2：<span class="pw" data-n="2"></span>
+招式威力为5：<span class="pw" data-n="5"></span>
+物理招式：<span class="bg phy"></span>
+特殊招式：<span class="bg spe"></span>
+变化招式：<span class="bg sta"></span>
+持续时间为1轮：<span class="clock" data-n="1"></span>
+持续时间为10轮：<span class="clock" data-n="10"></span>
+完整场景：<span class="clock scene"></span>
+反应动作：<span class="react" data-n="1"></span>
+延迟反应：<span class="react down" data-n="1"></span>
+总骰池为6：<span class="dice-pool" data-n="6"></span>
+总骰池为12：<span class="dice-pool" data-n="12"></span>
