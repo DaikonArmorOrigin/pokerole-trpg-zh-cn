@@ -53,6 +53,9 @@ def git(*args, stream=False):
 
 
 def label_of(code):
+    # git status 的状态码是两列（暂存区 / 工作区），" M" 这种前面带空格，
+    # 所以先 strip 再判断，否则修改会被认成「变更」
+    code = code.strip()
     for key, text in LABELS:
         if code.startswith(key):
             return text
@@ -117,6 +120,8 @@ def main():
         return 1
 
     print('  [3/3] 推送到 GitHub …（第一次可能要弹浏览器授权）')
+    # 先把上面几行吐出去，否则 git 的输出会抢在它们前面显示
+    sys.stdout.flush()
     code = git('push', 'origin', 'HEAD', stream=True)
     if code != 0:
         print('')
