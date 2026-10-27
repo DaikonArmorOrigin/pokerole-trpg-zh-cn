@@ -26,7 +26,7 @@ import sys
 
 # 项目根目录：本脚本在 _dev/ 里，往上一层才是网站根目录
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LIVE_URL = 'https://daikonarmororigin.github.io/pokemon-trpg/'
+LIVE_URL = 'https://daikonarmororigin.github.io/pokerole-trpg-zh-cn/'
 
 # git status 的前两位状态码 → 中文
 LABELS = [
