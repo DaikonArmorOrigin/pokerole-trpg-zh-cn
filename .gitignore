@@ -23,3 +23,16 @@ desktop.ini
 # Python（serve.py 运行时可能生成）
 __pycache__/
 *.pyc
+
+# 素材抓取的中间产物（_dev/fetch_balls_52poke.py 下载的原始 PNG、
+# 无头 Chrome 的临时 profile）。丢了重跑脚本就有，不必进仓库。
+_dev/tmp/
+
+# 素材抓取的中间产物（_dev/fetch_balls_52poke.py 下载的原始 PNG、
+# 无头 Chrome 的临时 profile）。丢了重跑脚本就有，不必进仓库。
+_dev/tmp/
+
+# 源书扫描件与译文工作稿：不进仓库（版权 + 体积，15 个 PDF 共 58MB）
+# 需要时把具体文件 -f 加进来，别整目录放开。
+*.pdf
+4.宝可梦对战.docx

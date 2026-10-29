@@ -1,25 +1,32 @@
 /* ============================================================
  * type-data.js — 18 种属性克制关系（第六世代及以后）
  * 单独成文件：内容型数据，与交互逻辑分离，便于校对与复用
- * 字段：zh 中文名 / strong 攻击克制 / weak 被克制 / immunity 免疫
+ * 字段（都以「本属性」为主语）：
+ *   zh       中文名
+ *   strong   攻击克制：用本属性打，伤害 ×2
+ *   weak     被克制：被这些属性打，伤害 ×2
+ *   resist   抗性：被这些属性打，伤害 ×0.5
+ *   immunity 免疫：被这些属性打，伤害 ×0
+ * 注意 weak 和 resist 不是同一组关系的正反面（比如岩石抗一般，
+ * 但一般并不克制岩石），所以必须分别列，不能互相推导。
  * ============================================================ */
 window.POKE_TYPES = {
-    normal:   { zh: '一般',   strong: [],                                weak: ['格斗'],                        immunity: ['幽灵'] },
-    fire:     { zh: '火',     strong: ['草', '冰', '虫', '钢'],           weak: ['水', '地面', '岩石'],           immunity: [] },
-    water:    { zh: '水',     strong: ['火', '地面', '岩石'],             weak: ['电', '草'],                    immunity: [] },
-    electric: { zh: '电',     strong: ['水', '飞行'],                     weak: ['地面'],                        immunity: [] },
-    grass:    { zh: '草',     strong: ['水', '地面', '岩石'],             weak: ['火', '冰', '毒', '飞行', '虫'], immunity: [] },
-    ice:      { zh: '冰',     strong: ['草', '地面', '飞行', '龙'],       weak: ['火', '格斗', '岩石', '钢'],     immunity: [] },
-    fight:    { zh: '格斗',   strong: ['一般', '冰', '岩石', '恶', '钢'], weak: ['飞行', '超能力', '妖精'],       immunity: [] },
-    poison:   { zh: '毒',     strong: ['草', '妖精'],                     weak: ['地面', '超能力'],              immunity: [] },
-    ground:   { zh: '地面',   strong: ['火', '电', '毒', '岩石', '钢'],   weak: ['水', '草', '冰'],              immunity: ['飞行'] },
-    flying:   { zh: '飞行',   strong: ['草', '格斗', '虫'],               weak: ['电', '冰', '岩石'],            immunity: ['地面'] },
-    psychic:  { zh: '超能力', strong: ['格斗', '毒'],                     weak: ['虫', '幽灵', '恶'],            immunity: [] },
-    bug:      { zh: '虫',     strong: ['草', '超能力', '恶'],             weak: ['火', '飞行', '岩石'],          immunity: [] },
-    rock:     { zh: '岩石',   strong: ['火', '冰', '飞行', '虫'],         weak: ['水', '草', '格斗', '地面', '钢'], immunity: [] },
-    ghost:    { zh: '幽灵',   strong: ['超能力', '幽灵'],                 weak: ['幽灵', '恶'],                  immunity: ['一般', '格斗'] },
-    dragon:   { zh: '龙',     strong: ['龙'],                             weak: ['冰', '龙', '妖精'],            immunity: [] },
-    dark:     { zh: '恶',     strong: ['超能力', '幽灵'],                 weak: ['格斗', '虫', '妖精'],          immunity: ['超能力'] },
-    steel:    { zh: '钢',     strong: ['冰', '岩石', '妖精'],             weak: ['火', '格斗', '地面'],          immunity: ['毒'] },
-    fairy:    { zh: '妖精',   strong: ['格斗', '龙', '恶'],               weak: ['毒', '钢'],                    immunity: ['龙'] }
+    normal:   { zh: '一般',   strong: [],                                weak: ['格斗'],                        resist: [],                                                  immunity: ['幽灵'] },
+    fire:     { zh: '火',     strong: ['草', '冰', '虫', '钢'],           weak: ['水', '地面', '岩石'],           resist: ['火', '草', '冰', '虫', '钢', '妖精'],              immunity: [] },
+    water:    { zh: '水',     strong: ['火', '地面', '岩石'],             weak: ['电', '草'],                    resist: ['火', '水', '冰', '钢'],                            immunity: [] },
+    electric: { zh: '电',     strong: ['水', '飞行'],                     weak: ['地面'],                        resist: ['电', '飞行', '钢'],                                immunity: [] },
+    grass:    { zh: '草',     strong: ['水', '地面', '岩石'],             weak: ['火', '冰', '毒', '飞行', '虫'], resist: ['水', '电', '草', '地面'],                          immunity: [] },
+    ice:      { zh: '冰',     strong: ['草', '地面', '飞行', '龙'],       weak: ['火', '格斗', '岩石', '钢'],     resist: ['冰'],                                              immunity: [] },
+    fight:    { zh: '格斗',   strong: ['一般', '冰', '岩石', '恶', '钢'], weak: ['飞行', '超能力', '妖精'],       resist: ['虫', '岩石', '恶'],                                immunity: [] },
+    poison:   { zh: '毒',     strong: ['草', '妖精'],                     weak: ['地面', '超能力'],              resist: ['草', '格斗', '毒', '虫', '妖精'],                  immunity: [] },
+    ground:   { zh: '地面',   strong: ['火', '电', '毒', '岩石', '钢'],   weak: ['水', '草', '冰'],              resist: ['毒', '岩石'],                                      immunity: ['电'] },
+    flying:   { zh: '飞行',   strong: ['草', '格斗', '虫'],               weak: ['电', '冰', '岩石'],            resist: ['格斗', '虫', '草'],                                immunity: ['地面'] },
+    psychic:  { zh: '超能力', strong: ['格斗', '毒'],                     weak: ['虫', '幽灵', '恶'],            resist: ['格斗', '超能力'],                                  immunity: [] },
+    bug:      { zh: '虫',     strong: ['草', '超能力', '恶'],             weak: ['火', '飞行', '岩石'],          resist: ['格斗', '地面', '草'],                              immunity: [] },
+    rock:     { zh: '岩石',   strong: ['火', '冰', '飞行', '虫'],         weak: ['水', '草', '格斗', '地面', '钢'], resist: ['一般', '火', '毒', '飞行'],                      immunity: [] },
+    ghost:    { zh: '幽灵',   strong: ['超能力', '幽灵'],                 weak: ['幽灵', '恶'],                  resist: ['毒', '虫'],                                        immunity: ['一般', '格斗'] },
+    dragon:   { zh: '龙',     strong: ['龙'],                             weak: ['冰', '龙', '妖精'],            resist: ['火', '水', '电', '草'],                            immunity: [] },
+    dark:     { zh: '恶',     strong: ['超能力', '幽灵'],                 weak: ['格斗', '虫', '妖精'],          resist: ['幽灵', '恶'],                                      immunity: ['超能力'] },
+    steel:    { zh: '钢',     strong: ['冰', '岩石', '妖精'],             weak: ['火', '格斗', '地面'],          resist: ['一般', '草', '冰', '飞行', '超能力', '虫', '岩石', '龙', '钢', '妖精'], immunity: ['毒'] },
+    fairy:    { zh: '妖精',   strong: ['格斗', '龙', '恶'],               weak: ['毒', '钢'],                    resist: ['格斗', '虫', '恶'],                                immunity: ['龙'] }
 };

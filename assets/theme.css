@@ -24,10 +24,75 @@
     --text-title: #1f2937;
     --border-color: #e5e7eb;
     --sidebar-search-h: 58px;   /* 侧栏顶部搜索按钮占位，侧栏目录高度要减掉它 */
+
+    /* ============================================================
+       纸感主题 —— 取自原书 PDF 的实测色值
+       ------------------------------------------------------------
+       纸底 #e7e6db、正文 #404042、章节主色见下方 --ch-*
+       这三组值都是直接从 PDF 页面上采的，不是凭感觉调的，
+       所以网页和原书摆在一起时不会有"色偏"的违和感。
+       ============================================================ */
+    --paper: #f0ede1;           /* 正文纸面 */
+    --paper-tint: #e9e5d6;      /* 比纸面深一档，用于卡片/表头 */
+    --paper-deep: #ddd8c7;      /* 再深一档，用于嵌在纸里的凹槽 */
+    --paper-desk: #d8d3c2;      /* 纸外的"桌面"，正文卡片周围的底色 */
+    --paper-line: #cfc9b6;      /* 纸上的分隔线 */
+    --ink: #404042;             /* 正文墨色（原书实测） */
+    --ink-soft: #5f5f61;
+    --ink-faint: #8b8b86;
+
+    /* 章节主色：原书目录里每章一条色带，这里原样搬过来。
+       顺序 = 侧栏顺序，00 引言到 13 终章。 */
+    --ch-00: #8d9092;   /* 引言 · 灰 */
+    --ch-01: #da473e;   /* 不可思议的宝可梦世界 · 红 */
+    --ch-02: #2899c1;   /* 系统详解 · 青 */
+    --ch-03: #e8962f;   /* 角色创建 · 橙 */
+    --ch-04: #4fae7a;   /* 宝可梦对战 · 绿 */
+    --ch-05: #f4823a;   /* 收服宝可梦 · 橙红 */
+    --ch-06: #3f8fd2;   /* 训练宝可梦 · 蓝 */
+    --ch-07: #e8749f;   /* 旅途道具 · 粉 */
+    --ch-08: #be3735;   /* 宝可梦图鉴 · 深红 */
+    --ch-09: #7c8b96;   /* 宝可梦招式 · 石板灰 */
+    --ch-10: #7b6fc4;   /* 宝可梦特性 · 紫 */
+    --ch-11: #a9713f;   /* 游戏主持人 · 棕 */
+    --ch-12: #d4a017;   /* 冠军之魂 · 金 */
+    --ch-13: #6b7a8a;   /* 终章寄语 · 灰蓝 */
+
+    /* 当前页的章节色。app.js 按路由给 <body> 挂 data-chapter，
+       下面那条规则把 --ch-* 映射到 --ch，正文样式统一引用 --ch。 */
+    --ch: var(--ch-00);
+}
+
+body[data-chapter="00"] { --ch: var(--ch-00); }
+body[data-chapter="01"] { --ch: var(--ch-01); }
+body[data-chapter="02"] { --ch: var(--ch-02); }
+body[data-chapter="03"] { --ch: var(--ch-03); }
+body[data-chapter="04"] { --ch: var(--ch-04); }
+body[data-chapter="05"] { --ch: var(--ch-05); }
+body[data-chapter="06"] { --ch: var(--ch-06); }
+body[data-chapter="07"] { --ch: var(--ch-07); }
+body[data-chapter="08"] { --ch: var(--ch-08); }
+body[data-chapter="09"] { --ch: var(--ch-09); }
+body[data-chapter="10"] { --ch: var(--ch-10); }
+body[data-chapter="11"] { --ch: var(--ch-11); }
+body[data-chapter="12"] { --ch: var(--ch-12); }
+body[data-chapter="13"] { --ch: var(--ch-13); }
+
+/* --ch 在 body 上才定下来，所以深色 / 浅色两个派生值必须也声明在 body 上：
+   自定义属性按「继承到的计算值」传递，写在 :root 里会锁死在 --ch-00 上。
+   每行都是先给一条纯色兜底，再给 color-mix —— 万一浏览器不支持，也只是
+   色带深浅差一点，不会整块失效。 */
+body {
+    --ch-deep: var(--ch);
+    --ch-deep: color-mix(in srgb, var(--ch) 76%, #000);
+    --ch-wash: var(--paper-tint);
+    --ch-wash: color-mix(in srgb, var(--ch) 11%, var(--paper));
 }
 
 .custom-header {
-    background: var(--poke-red);
+    /* 顶栏压成深墨色，而不是饱和红：每章都有一条自己的彩色色带，
+       顶栏再抢红/橙就会和章节色打架。红色只留在精灵球和底边那一道。 */
+    background: #2d2e30;
     color: white;
     padding: 0 1rem;
     display: flex;
@@ -37,7 +102,8 @@
     left: 0;
     right: 0;
     z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-bottom: 3px solid var(--poke-red);
+    box-shadow: 0 3px 14px rgba(30, 26, 16, 0.20);
     gap: 12px;
     padding-top: env(safe-area-inset-top);
     height: calc(64px + env(safe-area-inset-top));
@@ -157,9 +223,9 @@ body {
 .sidebar {
     top: calc(64px + env(safe-area-inset-top)) !important;
     padding-top: 0 !important;
-    background: white !important;
-    border-right: 1px solid var(--border-color) !important;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04) !important;
+    background: var(--paper-deep) !important;
+    border-right: 1px solid #cdc7b4 !important;
+    box-shadow: 2px 0 14px rgba(70, 60, 35, 0.07) !important;
     /* 必须高于移动端遮罩（89），否则抽屉一打开就被自己的遮罩盖住 */
     z-index: 95 !important;
 }
@@ -181,7 +247,7 @@ body.sidebar-open .dex-fab { display: none; }
     right: 0;
     bottom: 0;
     height: 26px;
-    background: linear-gradient(to top, #fff 35%, rgba(255, 255, 255, 0));
+    background: linear-gradient(to top, var(--paper-deep) 35%, rgba(221, 216, 199, 0));
     pointer-events: none;
 }
 
@@ -195,10 +261,10 @@ body.sidebar-open .dex-fab { display: none; }
     height: 38px;
     margin: 14px 14px 6px;
     padding: 0 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #cdc7b4;
     border-radius: 9px;
-    background: #f9fafb;
-    color: #6b7280;
+    background: rgba(255, 255, 255, .55);
+    color: #6f6f66;
     font-family: inherit;
     font-size: 0.85rem;
     text-align: left;
@@ -213,9 +279,9 @@ body.sidebar-open .dex-fab { display: none; }
 }
 
 .sidebar-search-trigger:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-    color: #374151;
+    background: rgba(255, 255, 255, .85);
+    border-color: #b9b2a0;
+    color: var(--ink);
 }
 
 .sidebar-search-trigger:focus-visible {
@@ -277,27 +343,30 @@ body.sidebar-open .dex-fab { display: none; }
 }
 
 /* ---------- 侧边栏目录样式 ---------- */
+/* 侧栏也是纸：比正文纸深一档，像夹在书里的目录页。
+   当前章的高亮直接用 --ch —— body 上挂着 data-chapter，
+   所以翻到哪一章，目录里那一条就自动染上那一章的颜色。 */
 .sidebar-nav a {
     display: block;
     padding: 8px 14px;
     border-radius: 8px;
-    color: #4b5563;
+    color: #5a5a52;
     font-size: 0.9rem;
-    transition: all 0.15s;
+    transition: background-color 0.15s, color 0.15s;
     text-decoration: none;
     border-left: 3px solid transparent;
 }
 
 .sidebar-nav a:hover {
-    background: #f3f4f6;
-    color: #1f2937;
+    background: rgba(120, 110, 80, .09);
+    color: var(--ink);
 }
 
 .sidebar-nav a.active {
-    background: var(--poke-red-light);
-    color: var(--poke-red);
-    font-weight: 600;
-    border-left-color: var(--poke-red);
+    background: var(--ch-wash);
+    color: var(--ch-deep);
+    font-weight: 700;
+    border-left-color: var(--ch);
 }
 
 .sidebar-nav > ul > li > p,
@@ -338,22 +407,57 @@ body.sidebar-open .dex-fab { display: none; }
     padding-left: 12px;
 }
 
+/* 章节图标：原书目录每章压一枚球，颜色跟着章节走
+   （提取脚本 _dev/extract_chapter_icons.py）。
+   _sidebar.md 里写死了 width/height=16 兜底，CSS 加载时按字号等比缩放。 */
+.sidebar-nav .side-icon {
+    display: inline-block;
+    /* 图标统一重做过：内容占画布 87.5%（原来章节球 88%、精灵球只有 66%，
+       同一行里会一大一小）。这里按新比例定尺寸，视觉直径和改版前一致。 */
+    width: 0.95em;
+    height: 0.95em;
+    margin-right: 0.45em;
+    vertical-align: -0.125em;   /* 0.35em − 0.95em/2 */
+}
+
 /* ---------- 内容区背景与卡片 ---------- */
+/* 纸感：正文卡片就是「一张纸」，四周是更深一档的桌面色。
+   纸面那层用 SVG 噪声做极轻的颗粒——原书是印刷纸，纯平色看着太"网页"。
+   噪声是内联 data URI，180×180 一块平铺，不额外增加请求。
+
+   **桌面色必须铺在 html 上，不能只铺 .content。**
+   vue.css 里 .content 是 `position:absolute; top:0; bottom:0`，
+   高度锁死在一屏，页面往下滚之后它够不到，底下就露出 body 的白底
+   （症状：往下拉一点，纸外面全变白）。铺到 html 上则由浏览器
+   传播到整个画布，滚多长都是纸色。 */
+html,
+body {
+    background-color: var(--paper-desk);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='.055'/%3E%3C/svg%3E");
+}
+
 .content {
-    background: var(--content-bg) !important;
-    padding-top: 1rem !important;
+    background: transparent !important;
+    padding-top: 1.4rem !important;
 }
 
 .markdown-section {
-    max-width: 820px !important;
+    max-width: 862px !important;
     margin: 0 auto !important;
-    padding: 20px 24px 60px !important;
-    line-height: 1.8;
-    color: var(--text-main);
+    /* 左右留白交给 padding，章节色带和页脚插画再用负 margin 出血到纸边。
+       不要改成「子元素统一 margin」的写法：vue.css 里有
+       `.markdown-section p { margin: 1em 0 }` 这类 (0,1,1) 的简写规则，
+       会盖掉 (0,1,0) 的 `>*`，结果正文顶着纸边走。 */
+    padding: 0 var(--pad-x, 34px) 60px !important;
+    line-height: 1.85;
+    color: var(--ink);
     font-size: 1rem;
-    background: var(--card-bg);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    background: var(--paper);
+    border-radius: 4px;
+    /* 书页的阴影要窄而实，不能像卡片那样飘——纸是压在桌面上的 */
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .7) inset,
+                0 2px 4px rgba(60, 52, 30, .10),
+                0 12px 28px -12px rgba(60, 52, 30, .22);
     min-height: 300px;
 
     /* 中文正文的字体栈：英文用系统 UI 字体，汉字回落到各平台的
@@ -365,101 +469,213 @@ body.sidebar-open .dex-fab { display: none; }
     /* 关掉滚动锚定：翻页时浏览器会"记住"原来的滚动位置，
        导致新章节停在半截。关掉它，回到顶部才真正回得去 */
     overflow-anchor: none;
+
+    /* 正文左右留白由这一个变量决定：章节色带、插图都要"出血"到卡片边缘，
+       靠负 margin 吃掉这个值。改留白只改这里，别去各处改数字。 */
+    --pad-x: 34px;
 }
 
 /* ---------- 标题样式优化 ---------- */
-/* H1：红色加下划线（章节主标题） */
+/* H1：整幅章节色带。原书每章开头就是一条横贯页面的色带＋白字，
+   下面压一道更深的边，看起来像贴上去的标签。 */
 .markdown-section h1 {
-    color: var(--poke-red, #e3350d);
-    font-size: 1.8rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.42em;
+    /* 负 margin 吃掉父级 padding，让色带横贯整张纸 */
+    margin: 0 calc(-1 * var(--pad-x)) 1.6rem;
+    padding: 1.05rem var(--pad-x) 1.15rem;
+    background: var(--ch);
+    color: #fff;
+    font-size: 1.72rem;
     font-weight: 700;
-    border-bottom: 4px solid var(--poke-red, #e3350d);
-    padding-bottom: 0.4rem;
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+    border: 0;
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 5px 0 var(--ch-deep);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .18);
 }
 
-/* H2：纯红色文字，无下划线 */
+/* 标题内容被 docsify 包在 .anchor 里，真正的 flex 布局要下放到这一层，
+   否则图标和标题会各按各的基线摆 */
+.markdown-section h1 .anchor {
+    display: flex;
+    align-items: center;
+    gap: 0.42em;
+    color: #fff;
+    min-width: 0;
+}
+
+/* H2：章节色文字 + 上面一排点状分隔线（原书每个大节前都有一串圆点）。
+   点是用 radial-gradient 平铺出来的，比 border-image 好控制间距。 */
 .markdown-section h2 {
-    color: var(--poke-red, #e3350d);
+    position: relative;
+    color: var(--ch);
     border-bottom: none !important;
     font-weight: 700;
-    font-size: 1.5rem;
-    margin-top: 1.8rem;
-    margin-bottom: 0.6rem;
+    font-size: 1.42rem;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    margin-top: 2.6rem;
+    margin-bottom: 0.7rem;
+    padding-top: 1.15rem;
     padding-bottom: 0;
 }
 
-/* H3：左侧红色装饰条 */
+.markdown-section h2::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 7px;
+    background-image: radial-gradient(circle at 3.5px 3.5px,
+                      var(--ch) 2px, transparent 2.3px);
+    background-size: 13px 7px;
+    background-repeat: repeat-x;
+    opacity: .85;
+}
+
+/* 紧跟在 H1 后面的第一个 H2 不再画分隔线：色带下面已经够重了 */
+.markdown-section h1 + h2 {
+    margin-top: 1.2rem;
+    padding-top: 0;
+}
+.markdown-section h1 + h2::before {
+    display: none;
+}
+
+/* H3：章节色小方块 + 深墨色粗体（原书的小节就是这个记号） */
 .markdown-section h3 {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-title);
-    margin-top: 1.4rem;
-    margin-bottom: 0.5rem;
+    gap: 0.55em;
+    font-size: 1.13rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.45;
+    margin-top: 1.9rem;
+    margin-bottom: 0.55rem;
 }
 
 .markdown-section h3::before {
     content: "";
     display: block;
-    width: 8px;
-    height: 1.2em;
-    min-height: 18px;
-    background: var(--poke-red, #e3350d);
-    border-radius: 3px;
+    width: 0.82em;
+    height: 0.82em;
+    background: var(--ch);
+    border-radius: 2px;
     flex-shrink: 0;
+    /* 方块压在汉字视觉中心，不跟基线对齐 */
+    transform: translateY(0.02em);
+}
+
+/* H4：深墨色粗体 + 下划线（原书用「Charm」「Empathy」这种小标题） */
+.markdown-section h4 {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-top: 1.4rem;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.16rem;
+    border-bottom: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
+    display: inline-block;
 }
 
 /* ---------- 其他内容样式 ---------- */
+/* 注意：左右 margin 由上面的 `.markdown-section > *` 统一给，
+   这里一律用 margin-top / margin-bottom 长写法，
+   用 `margin: 1rem 0` 会把左右留白清零（它比 `>*` 更具体）。 */
 .markdown-section p {
-    margin-bottom: 0.9rem;
+    margin-bottom: 0.72rem;
+    /* 原书是两端对齐的，中文按字切，不会像西文那样拉出大缝 */
+    text-align: justify;
+    text-justify: inter-ideograph;
 }
 
 .markdown-section ul,
 .markdown-section ol {
     padding-left: 1.5rem;
-    margin-bottom: 0.9rem;
+    margin-bottom: 0.85rem;
 }
 
 .markdown-section li {
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.34rem;
 }
 
+/* 列表圆点用章节色（原书是青绿色的小圆点） */
+.markdown-section ul > li::marker {
+    color: var(--ch);
+}
+
+.markdown-section ol > li::marker {
+    color: var(--ch);
+    font-weight: 700;
+}
+
+/* 表格：原书没有竖线，只有隔行的浅色底，表头用章节色压一条 */
 .markdown-section table {
     width: 100%;
     border-collapse: collapse;
-    margin: 1rem 0;
-    font-size: 0.9rem;
+    margin-top: 1.1rem;
+    margin-bottom: 1.4rem;
+    font-size: 0.92rem;
+    background: transparent;
 }
 
 .markdown-section th,
 .markdown-section td {
-    border: 1px solid var(--border-color);
-    padding: 0.6rem 0.9rem;
+    border: 0;
+    border-bottom: 1px solid var(--paper-line);
+    padding: 0.58rem 0.8rem;
     text-align: left;
+    vertical-align: top;
 }
 
 .markdown-section th {
-    background: #f9fafb;
-    font-weight: 600;
-    color: var(--text-main);
+    background: var(--ch);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border-bottom: 0;
+    /* 表头一律不折行：球图标放大到 1.35em 以后第一列变宽，
+       「封印强度」这种四字表头会被挤成两行，很扎眼 */
+    white-space: nowrap;
 }
 
-.markdown-section tr:nth-child(even) {
-    background: #fafafa;
+/* 表头四角切圆，和章节色带是一套语言 */
+.markdown-section thead tr:first-child th:first-child { border-top-left-radius: 3px; }
+.markdown-section thead tr:first-child th:last-child  { border-top-right-radius: 3px; }
+
+/* vue.css 给隔行铺了 #f8f8f8、给每行加了 #ccc 上边框，
+   在新纸底上会亮成一条条白带，这里全部收掉，改由下面两条规则重新给色 */
+.markdown-section tr {
+    border-top: 0;
+}
+.markdown-section tr:nth-child(2n) {
+    background-color: transparent;
 }
 
+.markdown-section tbody tr:nth-child(odd) {
+    background: color-mix(in srgb, var(--paper-tint) 55%, transparent);
+}
+
+.markdown-section tbody tr:hover {
+    background: var(--ch-wash);
+}
+
+/* 引用块：原书那种浅灰圆角块，左边不画竖条 */
 .markdown-section blockquote {
-    border-left: 4px solid var(--poke-red);
-    background: var(--poke-red-light);
-    padding: 0.6rem 1rem;
-    margin: 1rem 0;
-    border-radius: 0 0.5rem 0.5rem 0;
-    color: #4b5563;
-    font-size: 0.95rem;
+    border-left: 0;
+    background: var(--paper-tint);
+    padding: 0.95rem 1.15rem;
+    margin-top: 1.1rem;
+    margin-bottom: 1.1rem;
+    border-radius: 10px;
+    color: var(--ink-soft);
+    font-size: 0.96rem;
 }
 
 .markdown-section blockquote p {
@@ -467,37 +683,54 @@ body.sidebar-open .dex-fab { display: none; }
 }
 
 .markdown-section strong {
-    color: var(--text-title);
-    font-weight: 600;
+    color: #232325;
+    font-weight: 700;
 }
 
-.markdown-section a {
-    color: var(--poke-red);
+.markdown-section em {
+    color: var(--ink-soft);
+}
+
+/* 正文里的链接用章节色。
+   必须排除 .anchor —— docsify 会把每个标题的内容包进
+   `<a class="anchor"><span>标题</span></a>`，不排除的话标题字色会被
+   链接色顶掉（章节色带上的白字直接变成深色，看起来像没生效）。 */
+.markdown-section a:not(.anchor) {
+    color: var(--ch-deep);
     text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.15s;
+    border-bottom: 1px solid color-mix(in srgb, var(--ch) 45%, transparent);
+    transition: border-color 0.15s, color 0.15s;
 }
 
-.markdown-section a:hover {
-    border-bottom-color: var(--poke-red);
+.markdown-section a:not(.anchor):hover {
+    color: var(--ch);
+    border-bottom-color: var(--ch);
+}
+
+/* 标题锚点：只负责跳转，不该有自己的颜色和下划线 */
+.markdown-section .anchor {
+    color: inherit;
+    border-bottom: 0;
+    text-decoration: none;
 }
 
 .markdown-section img {
     max-width: 100%;
     border-radius: 8px;
-    margin: 0.5rem 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .markdown-section code {
-    background: #f3f4f6;
+    background: var(--paper-deep);
     padding: 0.1rem 0.4rem;
     border-radius: 4px;
     font-size: 0.85rem;
-    color: var(--poke-red);
+    color: #8a4a2a;
 }
 
 .markdown-section pre {
-    background: #1f2937;
+    background: #2f2f31;
     border-radius: 8px;
     padding: 1rem;
     overflow-x: auto;
@@ -544,14 +777,15 @@ body.sidebar-open .dex-fab { display: none; }
 
 /* ---------- 上下页导航按钮 ---------- */
 .custom-nav {
-    max-width: 820px;
-    margin: 2rem auto 0 auto;
+    max-width: 862px;
+    margin: 1.6rem auto 0 auto;
     padding: 0 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid var(--border-color);
-    padding-top: 1.5rem;
+    /* 翻页按钮落在纸外的"桌面"上，分隔线要跟着换色 */
+    border-top: 1px solid rgba(120, 110, 80, .18);
+    padding-top: 1.4rem;
 }
 
 .custom-nav button {
@@ -559,20 +793,20 @@ body.sidebar-open .dex-fab { display: none; }
     align-items: center;
     gap: 8px;
     padding: 0.5rem 1.2rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(120, 110, 80, .22);
     border-radius: 8px;
-    background: white;
-    color: #4b5563;
+    background: rgba(255, 255, 255, .55);
+    color: var(--ink);
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color 0.15s, border-color 0.15s;
     font-family: inherit;
 }
 
 .custom-nav button:hover:not(:disabled) {
-    background: #f9fafb;
-    border-color: #d1d5db;
+    background: #fff;
+    border-color: var(--ch);
 }
 
 .custom-nav button:disabled {
@@ -605,12 +839,12 @@ body.sidebar-open .dex-fab { display: none; }
 
 /* ---------- 页脚 ---------- */
 .custom-footer {
-    max-width: 820px;
+    max-width: 862px;
     margin: 0 auto 0 auto;
     padding: 1.5rem 24px 2rem;
     text-align: center;
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: #7a7466;
 }
 
 /* 侧栏搜索框的旧样式已随 docsify 搜索插件一并移除，
@@ -618,9 +852,34 @@ body.sidebar-open .dex-fab { display: none; }
 
 /* ---------- 响应式微调 ---------- */
 @media (max-width: 640px) {
+    /* 窄屏左右留白收窄。--pad-x 是全站正文留白的唯一开关，
+       章节色带和页脚插画都靠它做「出血」，所以这里只改这一个值。 */
     .content .markdown-section {
-        padding: 1.2rem 1.2rem !important;
-        border-radius: 12px;
+        --pad-x: 18px;
+        padding: 0 var(--pad-x) 44px !important;
+        border-radius: 0;
+    }
+
+    .markdown-section h1 {
+        font-size: 1.34rem;
+        padding-top: 0.9rem;
+        padding-bottom: 0.95rem;
+        box-shadow: 0 4px 0 var(--ch-deep);
+    }
+
+    .markdown-section h2 {
+        font-size: 1.2rem;
+        margin-top: 2.1rem;
+    }
+
+    .markdown-section h3 {
+        font-size: 1.06rem;
+        margin-top: 1.5rem;
+    }
+
+    /* 两端对齐在窄屏会把字距拉开，改成左对齐 */
+    .markdown-section p {
+        text-align: left;
     }
 
     .custom-header .title-group h1 {
@@ -707,25 +966,34 @@ body.sidebar-open .dex-fab { display: none; }
     text-shadow: none;
 }
 
-/* 18 种属性背景色 */
-.type-normal   { background: #A8A77A; }
-.type-bug      { background: #A6B91A; }
-.type-dark     { background: #705746; }
-.type-dragon   { background: #6F35FC; }
-.type-electric { background: #F7D02C; }
-.type-fairy    { background: #D685AD; }
-.type-fight    { background: #C22E28; }
-.type-fire     { background: #EE8130; }
-.type-flying   { background: #A98FF3; }
-.type-ghost    { background: #735797; }
-.type-grass    { background: #7AC74C; }
-.type-ground   { background: #E2BF65; }
-.type-ice      { background: #96D9D6; }
-.type-poison   { background: #A33EA1; }
-.type-psychic  { background: #F95587; }
-.type-rock     { background: #B6A136; }
-.type-steel    { background: #B7B7CE; }
-.type-water    { background: #6390F0; }
+/* 18 种属性背景色（--type-bg 供需要自定义底色的组件复用，
+   别直接写 background —— 后面的组件同优先级会把它盖掉） */
+.type-normal   { --type-bg: #A8A77A; background: var(--type-bg); }
+.type-bug      { --type-bg: #A6B91A; background: var(--type-bg); }
+.type-dark     { --type-bg: #705746; background: var(--type-bg); }
+.type-dragon   { --type-bg: #6F35FC; background: var(--type-bg); }
+.type-electric { --type-bg: #F7D02C; background: var(--type-bg); }
+.type-fairy    { --type-bg: #D685AD; background: var(--type-bg); }
+.type-fight    { --type-bg: #C22E28; background: var(--type-bg); }
+.type-fire     { --type-bg: #EE8130; background: var(--type-bg); }
+.type-flying   { --type-bg: #A98FF3; background: var(--type-bg); }
+.type-ghost    { --type-bg: #735797; background: var(--type-bg); }
+.type-grass    { --type-bg: #7AC74C; background: var(--type-bg); }
+.type-ground   { --type-bg: #E2BF65; background: var(--type-bg); }
+.type-ice      { --type-bg: #96D9D6; background: var(--type-bg); }
+.type-poison   { --type-bg: #A33EA1; background: var(--type-bg); }
+.type-psychic  { --type-bg: #F95587; background: var(--type-bg); }
+.type-rock     { --type-bg: #B6A136; background: var(--type-bg); }
+.type-steel    { --type-bg: #B7B7CE; background: var(--type-bg); }
+.type-water    { --type-bg: #6390F0; background: var(--type-bg); }
+
+/* 浅色底上得用深色字。做成变量，双属性模块的色块共用同一套判断 */
+.type-normal,
+.type-electric,
+.type-ground,
+.type-steel,
+.type-fairy,
+.type-ice { --type-ink: #1f2937; }
 
 @media (max-width: 600px) {
     .type-grid {
@@ -736,154 +1004,578 @@ body.sidebar-open .dex-fab { display: none; }
     .type-item .zh { font-size: 1rem; }
 }
 
-/* ===== 引导提示卡 ===== */
-.tip-card {
-    background: #faf9f7;
-    border-left: 8px solid var(--poke-red, #e3350d);
-    border-radius: 0 12px 12px 0;
-    padding: 20px 28px 16px 28px;
-    margin: 28px 0 32px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: box-shadow 0.2s;
+/* ===== 双属性相克计算（typechart 页底部） ===== */
+.type-dual {
+    margin: 1.5rem 0;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
-.tip-card:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-}
-.tip-card .tip-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 6px;
+
+/* --- 两个槽位 --- */
+.td-slots {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
-.tip-card .tip-title::before {
-    content: "📖";
-    font-size: 1.3rem;
+.td-slot {
+    flex: 1 1 104px;
+    min-width: 0;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 10px;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
-.tip-card p {
-    margin-bottom: 8px;
+/* 底色只给空槽：填上之后要露出 .type-* 的属性色，所以不能用 .td-slot 统一写背景 */
+.td-slot:not(.is-filled) { background: #f9fafb; }
+.td-slot:not(.is-filled):hover { border-color: #9ca3af; background: #f3f4f6; }
+/* 「下一个点属性会填这里」。不用红色：红虚线在空槽上像报错 */
+.td-slot.is-active { border-color: #6b7280; }
+.td-slot.is-active.is-filled { box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.22); }
+.td-slot.is-filled {
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.5);
+    color: var(--type-ink, #fff);
+}
+.td-slot.is-filled:hover { filter: brightness(1.06); }
+
+/* --- 第三属性：默认关着，开关打开才可用 --- */
+.td-third {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+.td-third .td-slot { flex: 0 0 104px; }
+.td-slot:disabled { opacity: 0.55; cursor: default; }
+.td-slot.is-off { background: #f9fafb; }
+
+.td-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+/* 视觉隐藏但保留键盘可达（checkbox 自己当开关，外面那层是轨道） */
+.td-switch input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+.td-switch-track {
+    position: relative;
+    flex: none;
+    width: 38px;
+    height: 22px;
+    border-radius: 999px;
+    background: #d1d5db;
+    transition: background 0.18s;
+}
+.td-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    transition: transform 0.18s;
+}
+.td-switch input:checked + .td-switch-track { background: var(--poke-red); }
+.td-switch input:checked + .td-switch-track::after { transform: translateX(16px); }
+.td-switch input:focus-visible + .td-switch-track {
+    box-shadow: 0 0 0 3px rgba(227, 53, 13, 0.25);
+}
+.td-switch-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #6b7280;
+}
+.td-switch input:checked ~ .td-switch-label { color: var(--text-title); }
+.td-third-hint { font-size: 0.75rem; color: #9ca3af; }
+.td-slot-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.td-slot-x { font-size: 0.9rem; opacity: 0.7; }
+
+.td-swap,
+.td-reset {
+    flex: none;
+    height: 36px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: #f9fafb;
+    font-family: inherit;
+    font-size: 0.85rem;
     color: #4b5563;
-    font-size: 0.98rem;
-    line-height: 1.7;
+    cursor: pointer;
+    transition: background 0.15s;
 }
-.tip-card p:last-child {
-    margin-bottom: 0;
+.td-swap { width: 36px; font-size: 1.05rem; line-height: 1; }
+.td-reset { padding: 0 12px; margin-left: auto; }
+.td-swap:hover:not(:disabled),
+.td-reset:hover:not(:disabled) { background: #f3f4f6; }
+.td-swap:disabled,
+.td-reset:disabled { opacity: 0.4; cursor: default; }
+
+/* --- 属性选择条 --- */
+.td-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    gap: 6px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border-color);
 }
-.tip-card a {
-    color: var(--poke-red, #e3350d);
-    font-weight: 600;
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.15s;
+.td-chip {
+    padding: 7px 4px;
+    border: 2px solid transparent;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--type-ink, #fff);
+    cursor: pointer;
+    opacity: 0.85;
+    transition: transform 0.12s, opacity 0.12s, box-shadow 0.12s;
 }
-.tip-card a:hover {
-    border-bottom-color: var(--poke-red, #e3350d);
+.td-chip:hover { opacity: 1; transform: translateY(-1px); }
+.td-chip.is-on {
+    opacity: 1;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(31, 41, 55, 0.45);
 }
 
-/* ===== 重要规则卡 ===== */
-.rule-card {
-    background: #fffbeb;
-    border-left: 8px solid #f59e0b;
-    border-radius: 0 12px 12px 0;
-    padding: 16px 24px;
-    margin: 20px 0;
-    box-shadow: 0 1px 4px rgba(245, 158, 11, 0.1);
+/* --- 结果 --- */
+.td-result {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border-color);
 }
-.rule-card .rule-title {
+.td-idle { margin: 0; font-size: 0.9rem; color: #9ca3af; }
+.td-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.td-pill {
+    padding: 3px 11px;
+    border-radius: 999px;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: #92400e;
+    color: var(--type-ink, #fff);
+}
+.td-plus { color: #9ca3af; font-weight: 700; }
+.td-head-note { margin-left: auto; font-size: 0.75rem; color: #9ca3af; }
+
+.td-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 0;
+    border-top: 1px solid #f3f4f6;
+}
+.td-mult {
+    flex: none;
+    width: 80px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #9ca3af;
+}
+.td-mult b {
+    margin-right: 4px;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+}
+.td-row.is-x8 .td-mult { color: #7a1210; }
+.td-row.is-x4 .td-mult { color: #8f1d17; }
+.td-row.is-x2 .td-mult { color: var(--poke-red); }
+.td-row.is-half .td-mult { color: #2e9e5b; }
+.td-row.is-quarter .td-mult { color: #1f7a45; }
+.td-row.is-eighth .td-mult { color: #14663a; }
+.td-row.is-zero .td-mult { color: #9ca3af; }
+
+.td-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-width: 0;
+}
+.td-res-chip {
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--type-ink, #fff);
+}
+.td-none { font-size: 0.8rem; color: #d1d5db; }
+
+@media (max-width: 520px) {
+    /* 槽位 + 交换 + 清空要在一条里排下，否则「清空」会掉到第二行单吊着 */
+    .td-slots { gap: 8px; }
+    .td-slot { flex: 1 1 76px; height: 44px; padding: 0 8px; font-size: 0.9rem; }
+    .td-swap { width: 32px; }
+    .td-reset { margin-left: 0; padding: 0 9px; font-size: 0.8rem; }
+
+    .td-mult { width: 66px; }
+    .td-chip { font-size: 0.78rem; padding: 6px 2px; }
+}
+
+/* ===== 队伍弱点补盲图 ===== */
+.team-chart {
+    margin: 1.5rem 0;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.tm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.tm-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-.rule-card .rule-title::before {
-    content: "⚠️";
-    font-size: 1.1rem;
+.tm-no {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 700;
 }
-.rule-card p {
-    color: #78350f;
-    margin-bottom: 4px;
+.tm-type {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #f9fafb;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    cursor: pointer;
+}
+.tm-type:focus {
+    outline: none;
+    border-color: var(--poke-red);
+    box-shadow: 0 0 0 3px rgba(227, 53, 13, 0.12);
+}
+/* 选好之后左边镶一条属性色，扫一眼就知道每只填了什么 */
+.tm-type.is-set {
+    border-left: 4px solid var(--type-bg, #d1d5db);
+    font-weight: 700;
+    color: var(--text-title);
+}
+.tm-del {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1;
+    color: #d1d5db;
+    cursor: pointer;
+}
+.tm-del:hover { background: var(--poke-red-light); color: var(--poke-red); }
+.tm-add {
+    margin-top: 10px;
+    width: 100%;
+    height: 34px;
+    border: 1px dashed #d1d5db;
+    border-radius: 9px;
+    background: #f9fafb;
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: #6b7280;
+    cursor: pointer;
+}
+.tm-add:hover:not(:disabled) { border-color: #9ca3af; background: #f3f4f6; }
+.tm-add:disabled { opacity: 0.5; cursor: default; }
+
+.tm-result {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border-color);
+}
+.tm-sum {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin-bottom: 10px;
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+.tm-sum b { color: var(--poke-red); font-size: 0.92rem; }
+
+.tm-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 3px 0;
+}
+.tm-chip {
+    flex: none;
+    width: 56px;
+    padding: 3px 0;
+    border-radius: 7px;
+    text-align: center;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--type-ink, #fff);
+}
+.tm-bar {
+    flex: 1 1 auto;
+    min-width: 40px;
+    height: 8px;
+    display: flex;
+    border-radius: 999px;
+    background: #f3f4f6;
+    overflow: hidden;
+}
+.tm-seg { height: 100%; }
+.tm-seg.is-w4 { background: #8f1d17; }
+.tm-seg.is-w2 { background: #f0876d; }
+.tm-count {
+    flex: none;
+    width: 46px;
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-title);
+    font-variant-numeric: tabular-nums;
+}
+.tm-count small { font-weight: 500; color: #9ca3af; }
+.tm-hits {
+    flex: none;
+    width: 72px;
+    text-align: right;
+    font-size: 0.72rem;
+    color: #9ca3af;
+    letter-spacing: 1px;
+}
+.tm-safe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.76rem;
+    color: #9ca3af;
+}
+.tm-safe .tm-chip { width: auto; padding: 2px 8px; font-size: 0.72rem; }
+
+@media (max-width: 520px) {
+    .tm-type { font-size: 0.8rem; padding: 0 6px; }
+    .tm-chip { width: 48px; font-size: 0.7rem; }
+    .tm-hits { width: 54px; font-size: 0.68rem; }
+    .tm-count { width: 40px; }
 }
 
-/* ===== 叙事者笔记（GM） ===== */
+/* ===== 提示卡系列 =====
+   原书里所有旁注都是「实心圆角块」：没有描边、没有左侧竖条、几乎没有投影，
+   靠底色深浅和一块小标签区分性质。这一组就按这个规则统一。
+   标签用 --ch-deep 打底：章节色里橙、金这类浅色配白字读不清，
+   压深一档以后白字才够对比度。 */
+.tip-card {
+    background: var(--ch-wash);
+    border-left: 0;
+    border-radius: 14px;
+    padding: 18px 22px 14px;
+    margin-top: 1.6rem;
+    margin-bottom: 1.8rem;
+}
+
+.tip-card .tip-title {
+    display: inline-block;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fff;
+    background: var(--ch-deep);
+    padding: 0.2em 0.85em;
+    border-radius: 999px;
+    margin-bottom: 0.7rem;
+    line-height: 1.7;
+}
+
+/* 没有标题时不留空行 */
+.tip-card .tip-title:empty { display: none; }
+
+.tip-card p {
+    margin-bottom: 0.55rem;
+    color: var(--ink);
+    font-size: 0.97rem;
+    line-height: 1.8;
+    text-align: left;
+}
+
+.tip-card p:last-child { margin-bottom: 0; }
+
+.tip-card a {
+    color: var(--ch-deep);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--ch) 45%, transparent);
+    transition: border-color 0.15s;
+}
+.tip-card a:hover { border-bottom-color: var(--ch); }
+
+/* ===== 重要规则卡 =====
+   暖色纸块：原书讲硬规则时会把整块底色换成米黄，正文转深褐。 */
+.rule-card {
+    background: #f5e5c3;
+    border-left: 0;
+    border-radius: 14px;
+    padding: 16px 22px 14px;
+    margin-top: 1.5rem;
+    margin-bottom: 1.7rem;
+}
+
+.rule-card .rule-title {
+    display: inline-block;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fdf6e6;
+    background: #9a5a12;
+    padding: 0.2em 0.85em;
+    border-radius: 999px;
+    margin-bottom: 0.65rem;
+    line-height: 1.7;
+}
+.rule-card .rule-title:empty { display: none; }
+
+.rule-card p {
+    color: #6b4310;
+    margin-bottom: 0.45rem;
+    line-height: 1.8;
+    text-align: left;
+}
+.rule-card p:last-child { margin-bottom: 0; }
+.rule-card strong { color: #4a2d08; }
+
+/* ===== 叙事者笔记（GM） =====
+   原书这块是整页里唯一的中性灰块，配一个圆形徽章。灰得越"闷"越像原书，
+   所以这里不用任何彩色，只靠纸灰 + 深灰标签。 */
 .storyteller-note {
-    background: #f4f3ff;
-    border-left: 8px solid #4f46e5;
-    border-radius: 0 16px 16px 0;
-    padding: 24px 28px 20px 28px;
-    margin: 28px 0 32px 0;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.06);
-    transition: box-shadow 0.25s;
+    position: relative;
+    background: #ddd9cc;
+    border-left: 0;
+    border-radius: 16px;
+    padding: 20px 24px 18px;
+    margin-top: 1.8rem;
+    margin-bottom: 1.9rem;
 }
-.storyteller-note:hover {
-    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.10);
-}
+
 .storyteller-note .note-label {
     display: inline-block;
-    background: #4f46e5;
-    color: #ffffff;
-    font-size: 0.7rem;
+    background: #6e6e66;
+    color: #fff;
+    font-size: 0.74rem;
     font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    padding: 3px 18px;
-    border-radius: 20px;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
-}
-.storyteller-note p {
-    margin-bottom: 6px;
-    color: #1e1b4b;
-    font-size: 0.98rem;
+    letter-spacing: 0.06em;
+    padding: 0.22em 0.9em;
+    border-radius: 999px;
+    margin-bottom: 0.7rem;
     line-height: 1.7;
 }
-.storyteller-note p:last-child {
-    margin-bottom: 0;
+
+.storyteller-note p {
+    margin-bottom: 0.55rem;
+    color: #3a3a36;
+    font-size: 0.97rem;
+    line-height: 1.8;
+    text-align: left;
 }
+.storyteller-note p:last-child { margin-bottom: 0; }
+
 .storyteller-note strong {
-    color: #4f46e5;
+    color: #26261f;
     font-weight: 700;
 }
 
-/* ===== 训练家提示 ===== */
+/* ===== 训练家提示 =====
+   偏绿的一块，和叙事者笔记的灰块拉开距离（两者经常前后脚出现）。 */
 .trainer-tip {
-    background: #ecfdf5;
-    border-left: 8px solid #10b981;
-    border-radius: 0 16px 16px 0;
-    padding: 24px 28px 20px 28px;
-    margin: 28px 0 32px 0;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.06);
-    transition: box-shadow 0.25s;
+    /* 原书的 Trainer Tips 是红色系（深红圆标 + 浅红块），不是绿色。
+       色值从《3.0介绍+世界观》p.14 采样：圆标 #cb4236、底色 #c98078。
+       网页上把底色掺进纸里，避免一整块红压过正文。 */
+    background: color-mix(in srgb, #cb4236 13%, var(--paper));
+    border-left: 0;
+    border-radius: 14px;
+    padding: 18px 22px 14px;
+    margin-top: 1.6rem;
+    margin-bottom: 1.8rem;
 }
-.trainer-tip:hover {
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12);
-}
+
 .trainer-tip .tip-label {
     display: inline-block;
-    background: #10b981;
-    color: #ffffff;
-    font-size: 0.7rem;
+    background: #cb4236;
+    color: #fff;
+    font-size: 0.74rem;
     font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    padding: 3px 18px;
-    border-radius: 20px;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
-}
-.trainer-tip p {
-    margin-bottom: 6px;
-    color: #065f46;
-    font-size: 0.98rem;
+    letter-spacing: 0.06em;
+    padding: 0.22em 0.9em;
+    border-radius: 999px;
+    margin-bottom: 0.7rem;
     line-height: 1.7;
-}   
-.trainer-tip p:last-child {
-    margin-bottom: 0;
 }
+
+.trainer-tip p {
+    margin-bottom: 0.55rem;
+    color: #4a2b26;
+    font-size: 0.97rem;
+    line-height: 1.8;
+    text-align: left;
+}
+.trainer-tip p:last-child { margin-bottom: 0; }
+
 .trainer-tip strong {
-    color: #059669;
+    color: #7a2a22;
     font-weight: 700;
 }
 
@@ -899,7 +1591,10 @@ body.sidebar-open .dex-fab { display: none; }
     z-index: 9999;
     opacity: 0;
     transition: opacity 0.2s ease;
-    max-width: 280px;
+    max-width: min(300px, calc(100vw - 16px));
+    /* 必须给定宽度算法：默认的 shrink-to-fit 会跟着 left 变，
+       一旦靠右，宽度被挤压、位置又重算，结果永远贴着屏幕边 */
+    width: max-content;
     border: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(8px);
     font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
@@ -924,7 +1619,8 @@ body.sidebar-open .dex-fab { display: none; }
 .type-tooltip .tt-label {
     font-weight: 600;
     font-size: 0.8rem;
-    min-width: 44px;
+    min-width: 58px;
+    white-space: nowrap;   /* 不加会把「×1/2」折到下一行 */
 }
 .type-tooltip .tt-strong .tt-label {
     color: #4ade80;
@@ -935,6 +1631,35 @@ body.sidebar-open .dex-fab { display: none; }
 /* ⭐ 免疫标签（灰色） */
 .type-tooltip .tt-immunity .tt-label {
     color: #d1d5db;
+}
+/* ⭐ 抗性标签（绿）：火既克制钢、又抗钢，和「克制」挤在一起时
+   全靠分段 + 这个颜色区分，别把两行并成一行 */
+.type-tooltip .tt-resist .tt-label {
+    color: #34d399;
+}
+
+/* 进攻 / 防守 分段小标题 */
+.type-tooltip .tt-sec {
+    margin-top: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #6b7280;
+}
+.type-tooltip .tt-sec.tt-sec-def {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.type-tooltip .tt-sec + .tt-row { margin-top: 4px; }
+
+/* 倍率跟在标签后面，淡淡的，不抢属性名 */
+.type-tooltip .tt-label b {
+    margin-left: 4px;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
 }
 .type-tooltip .tt-tags {
     display: flex;
@@ -1166,7 +1891,7 @@ body.sidebar-open .dex-fab { display: none; }
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 1.4rem;
+    font-size: 1.4em;
     letter-spacing: 2px;
     font-weight: 400;
 
@@ -1637,12 +2362,141 @@ body.search-open { overflow: hidden; }
     font-variant-numeric: tabular-nums;
 }
 .dr-summary .dr-total { color: #9ca3af; }
+.dr-summary .dr-time {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 掷骰记录：时间 + 每颗点数 + 成功数，数据在 localStorage 里
+   注意：这层 DOM 在 .markdown-section 里，正文的 `ol / li` 规则
+   （padding-left、margin-bottom）会盖掉单类名选择器，所以这里必须带上
+   .markdown-section 前缀，否则列表会莫名右缩 24px。 */
+.markdown-section .dr-log {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-color);
+}
+.markdown-section .dr-log[hidden] { display: none; }
+.dr-log-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.dr-log-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-title);
+}
+.dr-log-meta { font-size: 0.75rem; color: #9ca3af; }
+.dr-log-clear {
+    margin-left: auto;
+    padding: 3px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font-family: inherit;
+    font-size: 0.78rem;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.dr-log-clear:hover { background: #f3f4f6; color: var(--poke-dark); }
+.dr-log-clear.is-armed {
+    background: var(--poke-red-light);
+    color: var(--poke-red);
+    font-weight: 700;
+}
+
+.markdown-section .dr-log-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 264px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+.markdown-section .dr-log-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 6px 2px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+.markdown-section .dr-log-row:last-child { border-bottom: 0; }
+.dr-log-time {
+    flex: none;
+    min-width: 4.6em;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+}
+.dr-log-dice {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+.dr-log-die {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background: #f3f4f6;
+    color: #9ca3af;
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.dr-log-die.is-success {
+    background: var(--poke-red-light);
+    color: var(--poke-red);
+}
+.dr-log-res {
+    flex: none;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.dr-log-res b {
+    margin-right: 1px;
+    font-size: 0.95rem;
+    color: var(--poke-red);
+}
+.dr-log-del {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.dr-log-del:hover { background: var(--poke-red-light); color: var(--poke-red); }
 
 @media (max-width: 520px) {
     .search-overlay { padding: 4vh 12px 12px; }
     .search-panel { max-height: 86vh; }
     .search-foot { display: none; }
     .dr-roll { margin-left: 0; width: 100%; }
+
+    /* 窄屏：时间列压窄，让骰子点数多占点地方 */
+    .markdown-section .dr-log-row { gap: 8px; }
+    .dr-log-time { min-width: 0; font-size: 0.72rem; }
+    .dr-log-die { width: 18px; height: 18px; font-size: 0.68rem; }
 
     /* 手机上按钮别顶到屏幕边缘，也别挡住正文最后一行 */
     .dex-fab {
@@ -1687,6 +2541,8 @@ body.search-open { overflow: hidden; }
     .translator-note summary .hint {
         display: none !important;
     }
+    /* 屏幕上的纸色 / 桌面色都是装饰，打印时全部还原成白纸 */
+    html { background: #fff !important; background-image: none !important; }
     body { padding-top: 0 !important; background: #fff !important; }
     .content { background: #fff !important; padding: 0 !important; }
     .markdown-section {
@@ -1701,9 +2557,26 @@ body.search-open { overflow: hidden; }
     /* 打印时展开所有折叠块，否则内容会丢 */
     .collapsible-insert .insert-body { max-height: none !important; padding: 0 28px 12px !important; }
     details.translator-note[open] .note-body { display: block; }
-    .markdown-section h1, .markdown-section h2 { color: #000 !important; }
-    .markdown-section h1 { border-bottom: 2px solid #000; }
+    /* 章节色带是屏幕上的装饰，打印出来是一大块费墨的色块，
+       改成「黑字＋黑下划线」，和原来的打印稿一致 */
+    .markdown-section h1 {
+        background: none !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-bottom: 2px solid #000;
+    }
+    .markdown-section h1 .anchor { color: #000 !important; }
+    .markdown-section h2 { color: #000 !important; }
+    .markdown-section h2::before { display: none; }
     .markdown-section h3::before { background: #000; }
+    .markdown-section th { background: none !important; color: #000 !important; }
+    /* 页脚插画纯装饰，别占纸 */
+    .markdown-section > .chapter-scene { display: none !important; }
     .markdown-section a { color: #000 !important; text-decoration: underline; }
     .markdown-section table { page-break-inside: auto; }
     .markdown-section tr { page-break-inside: avoid; }
@@ -1727,20 +2600,22 @@ body.search-open { overflow: hidden; }
    docsify 把 active 类加在 <li> 上（class="active open file"），
    原样式写在 a 上，所以红色高亮从未生效，一直是 vue.css 的绿色。
    下面同时覆盖 a 与 li 两种写法，并压过 .app-sub-sidebar .active > a */
+/* 高亮色跟当前章的主色走（body 上挂着 data-chapter），
+   不再写死红色——否则翻到蓝色章、绿色章时，侧栏还是粉红一块。 */
 .sidebar-nav li.active > a,
 .sidebar-nav li.active > strong > a,
 .sidebar-nav li.active > p,
 .sidebar-nav a.active {
-    background: var(--poke-red-light);
-    color: var(--poke-red);
-    font-weight: 600;
-    border-left-color: var(--poke-red);
+    background: var(--ch-wash);
+    color: var(--ch-deep);
+    font-weight: 700;
+    border-left-color: var(--ch);
 }
 .sidebar-nav li.active > a:hover,
 .sidebar-nav li.active > strong > a:hover,
 .sidebar-nav a.active:hover {
-    background: var(--poke-red-light);
-    color: var(--poke-red);
+    background: var(--ch-wash);
+    color: var(--ch-deep);
 }
 
 /* vue.css 给激活项留了一条 border-right: 2px solid（绿色），
@@ -1765,6 +2640,14 @@ body.search-open { overflow: hidden; }
 .custom-breadcrumb .bc-icon {
     font-size: 0.95rem;
     line-height: 1;
+    flex-shrink: 0;
+}
+
+/* 面包屑里的章节球：直接复用侧栏那张位图（app.js 从侧栏 <a> 里取的 src）。
+   容器是 flex + align-items:center，所以不用管 vertical-align。 */
+.custom-breadcrumb .bc-ball {
+    width: 1.15em;
+    height: 1.15em;
     flex-shrink: 0;
 }
 
@@ -1806,14 +2689,25 @@ body.search-open { overflow: hidden; }
     height: auto;
 }
 
-.markdown-section p > img:only-child {
+/* 单独成段的图片：段落里除了这张图没有别的**元素**。
+   注意 :only-child 只数元素、不数文本节点，所以「一段话 + 一张图」
+   也会命中这条规则，把行内图标顶成整段配图。
+   带 .ball-icon 之类行内图标的图片必须排除掉（用 :not 显式排除）。 */
+/* 竖版插图（训练家证这类）按原书比例放在半栏宽，撑满整栏会高得离谱 */
+.markdown-section p > img:only-child[src$="league-licence.webp"] {
+    max-width: 360px;
+}
+
+.markdown-section p > img:only-child:not(.ball-icon):not(.rank-icon):not(.mv-icon):not(.mv-icon-lg):not(.item-icon) {
     display: block;
     margin: 1.2rem auto;
-    padding: 6px;
-    background: #fff;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    padding: 0;
+    /* 原书的插图是"印"在纸上的，不套白框。这里只留一道极淡的纸边阴影，
+       让图从纸面上浮起一点点，不做卡片。 */
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(70, 60, 35, .10);
 }
 
 /* ---------- 12. 表格铺满正文宽度 ----------
@@ -1883,29 +2777,18 @@ body.search-open { overflow: hidden; }
     font-weight: 900;
 }
 
-/* 2. 时钟图标：<span class="clock" data-n="1"></span> / <span class="clock scene"></span> */
+/* 2. 持续时间：<span class="clock" data-n="3"></span> / <span class="clock scene"></span>
+   底图取自原书 p.437 的 Round / Whole Scene Duration 表盘（assets/img/dur-*.webp），
+   数字用 CSS 叠在表盘中央——原书那枚图标里的数字是变的，做成位图就写死了。 */
 .clock {
-    width: 2.2rem;
-    height: 2.2rem;
-    background: #7cb3d6;
-    border: 2px solid #4383a8;
-    border-radius: 6px;
-    display: inline-block;          /* 原来 inline-flex，见文末说明 */
-    vertical-align: -0.75rem;   /* 0.35rem - 2.2rem/2 */
+    display: inline-block;
     position: relative;
-    margin: 0 4px;
-    box-shadow: inset 0 0 0 2px #fff, 0 2px 4px rgba(0,0,0,0.1); /* 内圈白边 */
+    width: 1.95em;
+    height: 1.95em;
+    margin: 0 0.15em;
+    vertical-align: -0.62em;   /* 0.35em - 1.95em/2 */
+    background: url(img/dur-round.webp) center / contain no-repeat;
 }
-/* 用伪元素画中间的白色表盘框 */
-.clock::before {
-    content: "";
-    position: absolute;
-    inset: 3px; /* 控制表盘大小 */
-    border: 2px solid #fff;
-    border-radius: 50%; /* 变成圆形表盘 */
-    opacity: 0.8;
-}
-/* 中间的数字/箭头 */
 .clock::after {
     content: attr(data-n);
     position: absolute;
@@ -1913,16 +2796,19 @@ body.search-open { overflow: hidden; }
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-weight: 800;
-    font-size: 1.1rem;
+    padding-top: 11%;          /* 表盘中心比图标中心低一点 */
+    box-sizing: border-box;
+    color: #2f4f8f;
+    font-weight: 900;
+    font-size: 0.8em;
     line-height: 1;
-    z-index: 1;
 }
-/* 完整场景（循环箭头） */
+/* 完整场景：换一张带循环箭头的底图，不叠数字 */
+.clock.scene {
+    background-image: url(img/dur-scene.webp);
+}
 .clock.scene::after {
-    content: "↻"; 
-    font-size: 1.4rem;
+    content: "";
 }
 
 /* 3. 反应动作：<span class="react" data-n="1"></span> / <span class="react down" data-n="1"></span> */
@@ -2129,6 +3015,506 @@ body.search-open { overflow: hidden; }
     transform: translate(-50%, -50%);
 }
 
+/* 招式／战斗图标（_dev/extract_move_icons.py 生成，清单见 _dev/图标调用表.md）
+   用法：<img class="mv-icon" src="assets/img/mv-powder.webp" alt="粉末类招式" width="20" height="20"> */
+.markdown-section .mv-icon {
+    display: inline-block;
+    width: 1.25em;
+    height: 1.25em;
+    margin: 0 0.25em 0 0;
+    border-radius: 0;
+    vertical-align: -0.3em;
+}
+
+/* 图例用的大号版本：单独成段说明「认准这个图标」时用 */
+.markdown-section .mv-icon-lg {
+    display: inline-block;
+    width: 2.6em;
+    height: 2.6em;
+    margin: 0 0.35em 0 0;
+    border-radius: 0;
+    vertical-align: -0.7em;
+}
+
+/* 图例里图标后面的中文说明 */
+.mv-legend-label {
+    margin-right: 1.2em;
+    color: #6b7280;
+    font-size: 0.9em;
+}
+
+/* ============================================================
+   短标签图标 <poke-icon>
+   ------------------------------------------------------------
+   参考 2.0 版那套 <tag class="effect recoil"> 写法：
+   类名映射到背景图，标记里不用再写 src / width / height / alt。
+
+   用法：<poke-icon class="mv powder"></poke-icon>
+         <poke-icon class="mv reaction lg"></poke-icon>   （lg = 图例大号）
+
+   类名规则：文件 mv-powder.webp → class="mv powder"。
+   加图标时：把文件放进 assets/img/，再往下面那串映射里加一行。
+
+   代价：背景图拿不到 alt，纯装饰用途没问题；需要 alt 的场合仍可用
+   原来的 <img class="mv-icon" src=... alt=...> 写法。
+   ============================================================ */
+poke-icon {
+    display: inline-block;
+    width: 1.25em;
+    height: 1.25em;
+    margin: 0 0.25em 0 0;
+    vertical-align: -0.3em;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+/* 短标签形式的球（<poke-icon class="ball poke">）跟着同一套尺寸走 */
+poke-icon.ball {
+    width: 0.94em;
+    height: 0.94em;
+    vertical-align: -0.12em;
+}
+
+/* 非正方形的图标：拉宽盒子，别把图压扁 */
+poke-icon.cat { width: 2.08em; }
+poke-icon.cat.lg { width: 4.42em; }   /* 分类图标 1.7:1，lg 高度 2.6em 时宽度要跟着算 */
+poke-icon.mv.switcher { width: 2.2em; }
+poke-icon.lg {
+    width: 2.6em;
+    height: 2.6em;
+    margin: 0 0.35em 0 0;
+    vertical-align: -0.7em;
+}
+
+/* —— 类名 → 文件 映射（76 个）—— */
+poke-icon.act.double { background-image: url(img/act-double.webp); }
+poke-icon.act.successive { background-image: url(img/act-successive.webp); }
+poke-icon.act.triple { background-image: url(img/act-triple.webp); }
+poke-icon.ball.cherish { background-image: url(img/ball-cherish.webp); }
+poke-icon.ball.dusk { background-image: url(img/ball-dusk.webp); }
+poke-icon.ball.dynamax { background-image: url(img/ball-dynamax.webp); }
+poke-icon.ball.fast { background-image: url(img/ball-fast.webp); }
+poke-icon.ball.great { background-image: url(img/ball-great.webp); }
+poke-icon.ball.heavy { background-image: url(img/ball-heavy.webp); }
+poke-icon.ball.luxury { background-image: url(img/ball-luxury.webp); }
+poke-icon.ball.master { background-image: url(img/ball-master.webp); }
+poke-icon.ball.old { background-image: url(img/ball-old.webp); }
+poke-icon.ball.poke { background-image: url(img/ball-poke.webp); }
+poke-icon.ball.quick { background-image: url(img/ball-quick.webp); }
+poke-icon.ball.starter { background-image: url(img/ball-starter.webp); }
+poke-icon.ball.ub { background-image: url(img/ball-ub.webp); }
+poke-icon.ball.ultra { background-image: url(img/ball-ultra.webp); }
+poke-icon.bf.change-type { background-image: url(img/bf-change-type.webp); }
+poke-icon.bf.duration { background-image: url(img/bf-duration.webp); }
+poke-icon.bf.no-evasion { background-image: url(img/bf-no-evasion.webp); }
+poke-icon.bf.no-evasion-clash { background-image: url(img/bf-no-evasion-clash.webp); }
+poke-icon.bf.no-items { background-image: url(img/bf-no-items.webp); }
+poke-icon.cat.physical { background-image: url(img/cat-physical.webp); }
+poke-icon.cat.special { background-image: url(img/cat-special.webp); }
+poke-icon.cat.support { background-image: url(img/cat-support.webp); }
+poke-icon.mv.bite { background-image: url(img/mv-bite.webp); }
+poke-icon.mv.blocking { background-image: url(img/mv-blocking.webp); }
+poke-icon.mv.crit { background-image: url(img/mv-crit.webp); }
+poke-icon.mv.cutter { background-image: url(img/mv-cutter.webp); }
+poke-icon.mv.fist { background-image: url(img/mv-fist.webp); }
+poke-icon.mv.heal-basic { background-image: url(img/mv-heal-basic.webp); }
+poke-icon.mv.heal-complete { background-image: url(img/mv-heal-complete.webp); }
+poke-icon.mv.heal-minor { background-image: url(img/mv-heal-minor.webp); }
+poke-icon.mv.late-reaction { background-image: url(img/mv-late-reaction.webp); }
+poke-icon.mv.lethal { background-image: url(img/mv-lethal.webp); }
+poke-icon.mv.never-miss { background-image: url(img/mv-never-miss.webp); }
+poke-icon.mv.ongoing { background-image: url(img/mv-ongoing.webp); }
+poke-icon.mv.out-of-range { background-image: url(img/mv-out-of-range.webp); }
+poke-icon.mv.powder { background-image: url(img/mv-powder.webp); }
+poke-icon.mv.projectile { background-image: url(img/mv-projectile.webp); }
+poke-icon.mv.rampage { background-image: url(img/mv-rampage.webp); }
+poke-icon.mv.ranged { background-image: url(img/mv-ranged.webp); }
+poke-icon.mv.reaction { background-image: url(img/mv-reaction.webp); }
+poke-icon.mv.recharge { background-image: url(img/mv-recharge.webp); }
+poke-icon.mv.recoil { background-image: url(img/mv-recoil.webp); }
+poke-icon.mv.set-damage { background-image: url(img/mv-set-damage.webp); }
+poke-icon.mv.shield { background-image: url(img/mv-shield.webp); }
+poke-icon.mv.sound { background-image: url(img/mv-sound.webp); }
+poke-icon.mv.switcher { background-image: url(img/mv-switcher.webp); }
+poke-icon.mv.unique { background-image: url(img/mv-unique.webp); }
+poke-icon.mv.vulnerable { background-image: url(img/mv-vulnerable.webp); }
+poke-icon.mv.wind { background-image: url(img/mv-wind.webp); }
+poke-icon.st.burn1 { background-image: url(img/st-burn1.webp); }
+poke-icon.st.confuse { background-image: url(img/st-confuse.webp); }
+poke-icon.st.frozen { background-image: url(img/st-frozen.webp); }
+poke-icon.st.love { background-image: url(img/st-love.webp); }
+poke-icon.st.paralysis { background-image: url(img/st-paralysis.webp); }
+poke-icon.tgt.ally { background-image: url(img/tgt-ally.webp); }
+poke-icon.tgt.ally-all { background-image: url(img/tgt-ally-all.webp); }
+poke-icon.tgt.area { background-image: url(img/tgt-area.webp); }
+poke-icon.tgt.battlefield { background-image: url(img/tgt-battlefield.webp); }
+poke-icon.tgt.field-ally { background-image: url(img/tgt-field-ally.webp); }
+poke-icon.tgt.field-self { background-image: url(img/tgt-field-self.webp); }
+poke-icon.tgt.foe { background-image: url(img/tgt-foe.webp); }
+poke-icon.tgt.foe-all { background-image: url(img/tgt-foe-all.webp); }
+poke-icon.tgt.foe-random { background-image: url(img/tgt-foe-random.webp); }
+poke-icon.tgt.self { background-image: url(img/tgt-self.webp); }
+poke-icon.wx.desolate { background-image: url(img/wx-desolate.webp); }
+poke-icon.wx.hail { background-image: url(img/wx-hail.webp); }
+poke-icon.wx.rain { background-image: url(img/wx-rain.webp); }
+poke-icon.wx.sandstorm { background-image: url(img/wx-sandstorm.webp); }
+poke-icon.wx.snow { background-image: url(img/wx-snow.webp); }
+poke-icon.wx.sunny { background-image: url(img/wx-sunny.webp); }
+poke-icon.wx.typhoon { background-image: url(img/wx-typhoon.webp); }
+poke-icon.wx.wind { background-image: url(img/wx-wind.webp); }
+
+/* ============================================================
+   参数化徽章 <icon-frame>
+   ------------------------------------------------------------
+   原书里「灼伤 ×3」「力量 ↑1」「命中 ↓2」这类徽章不是固定图形，
+   而是「底色 + 顶部标题 + 底部数值槽」三件套拼出来的。做成组件后
+   一套壳就能覆盖所有组合，不用为每个组合抠图。
+
+   用法：
+     <icon-frame class="flinch"><b>畏缩</b><span>3</span></icon-frame>
+     <icon-frame class="buff"><b>力量</b><span>↑1</span></icon-frame>
+     <icon-frame class="accuracy"><b>命中</b><span>↓2</span></icon-frame>
+   <b> 是顶部小标题，<span> 是白框里的数值/符号。
+   底色用原书配色，见下方各变体。
+   ============================================================ */
+icon-frame {
+    display: inline-block;
+    position: relative;
+    width: 3.25em;
+    height: 3.25em;
+    margin: 0.15em 0.3em 0.15em 0;
+    border-radius: 0.5em;
+    background-color: #4a537b;
+    vertical-align: middle;
+    overflow: hidden;
+    line-height: 1;
+    text-align: center;
+    font-size: 1rem;          /* 改这个就能整体缩放，内部全部用 em */
+}
+
+icon-frame > b {
+    display: block;
+    padding-top: 0.24em;
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #fff;
+}
+
+icon-frame > span {
+    position: absolute;
+    left: 0.2em;
+    right: 0.2em;
+    top: 1.15em;
+    bottom: 0.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.4em;
+    background: #fff;
+    font-size: 1.1em;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+/* 目标类 */
+icon-frame.target { background-color: #ff2424; }
+icon-frame.self { background-color: #20b1ff; }
+/* 状态异常（灼伤分三级） */
+icon-frame.paralysis { background-color: #d4c53e; }
+icon-frame.burn { background-color: #f15a22; }
+icon-frame.burn2 { background-color: #cc0500; }
+icon-frame.burn3 { background-color: #960703; }
+icon-frame.sleep { background-color: #a7ab99; }
+icon-frame.poison { background-color: #a574af; }
+icon-frame.poison2 { background-color: #672b73; }
+icon-frame.frozen { background-color: #86e0de; }
+icon-frame.flinch { background-color: #4a537b; }
+icon-frame.love { background-color: #f54e78; }
+icon-frame.confuse { background-color: #1cb579; }
+icon-frame.disabled { background-color: #ff3600; }
+/* 增减益与伤害 */
+icon-frame.buff { background-color: #2f6fd0; }
+icon-frame.debuff { background-color: #d0342c; }
+icon-frame.damage { background-color: #d0342c; }
+icon-frame.priority { background-color: #8aca83; }
+icon-frame.heal { background-color: #f8aba6; }
+/* 反应／延迟反应：青底 + 白框，箭头和数字是青的（原书 p.439） */
+icon-frame.reaction { background-color: #68b8b8; }
+icon-frame.reaction > b { letter-spacing: 0.01em; }
+icon-frame.reaction > span {
+    color: #4a97a2;
+    font-size: 1.25em;
+}
+/* 威力徽章。两种形态，别混用：
+   1) 招式卡上的威力值 —— 面板色 + 白字数值，没有白色小框
+      <icon-frame class="power"><b>威力</b><span>3</span></icon-frame>
+   2) 道具给的威力提升 —— 红＝物理、蓝＝特殊，数值在白色小框里、用框色写
+      <icon-frame class="power boost physical"><b>威力</b><span>+3</span></icon-frame>
+      <icon-frame class="power boost special"><b>威力</b><span>+3</span></icon-frame> */
+icon-frame.power {
+    background-color: #7f8c8d;
+    border: 2px solid #2b8a9e;
+}
+icon-frame.power > b { letter-spacing: 0.02em; }
+icon-frame.power > span {
+    background: transparent;
+    color: #fff;
+    font-size: 1.4em;
+}
+
+icon-frame.power.boost { border: none; }
+icon-frame.power.boost > span {
+    background: #fff;
+    font-size: 1.25em;
+}
+icon-frame.power.physical { background-color: #f15f42; }
+icon-frame.power.physical > span { color: #f15f42; }
+icon-frame.power.special { background-color: #5276ae; }
+icon-frame.power.special > span { color: #5276ae; }
+
+/* 速查页的表格：位图图标和徽章统一放大，视觉高度对齐 */
+.markdown-section table poke-icon {
+    width: 2.8em;
+    height: 2.8em;
+    margin: 0;
+    vertical-align: middle;
+}
+.markdown-section table poke-icon.cat { width: 4.8em; }   /* 分类图标是 1.7:1 的横图 */
+.markdown-section table icon-frame {
+    font-size: 0.8rem;
+    margin: 0;
+    vertical-align: middle;
+}
+/* 持续时间表盘：宽高是 1.95em，改 font-size 才能连同里面的数字一起放大 */
+.markdown-section table .clock {
+    font-size: 1.35rem;        /* 1.95em × 21.6px ≈ 42px */
+    margin: 0 0.15em;
+    vertical-align: middle;
+}
+.markdown-section table .field-chip { margin: 0; }
+
+/* 场地／规则标签：深色圆角块 + 白字
+   原书里 No Evasion / No Items / Change Type 这几个没有内容槽，就是一整块文字。
+   用法：<span class="field-chip">不可闪避</span> */
+.field-chip {
+    display: inline-block;
+    padding: 0.28em 0.55em;
+    margin: 0 0.3em 0.35em 0;
+    border-radius: 0.45em;
+    background: #3f3f3f;
+    color: #fff;
+    font-size: 0.85em;
+    font-weight: 700;
+    line-height: 1.3;
+    vertical-align: middle;
+}
+
+/* 内容槽里的勾 / 叉（「永远生效」「绝不生效」） */
+icon-frame > span.always::before,
+icon-frame > span.never::before {
+    font-size: 1.4em;
+    line-height: 1;
+    font-weight: 400;
+}
+icon-frame > span.always::before { content: "\2714"; color: #5cb85c; }
+icon-frame > span.never::before { content: "\2716"; color: #e02a2a; }
+
+/* 命中：黑底 + 红块（原书 p.79 就是黑框红块，不是整块红） */
+icon-frame.accuracy { background-color: #141414; }
+icon-frame.accuracy > span { background: #e02a2a; color: #fff; }
+
+/* 章节标题里的大球（原书每章标题左边那一枚）
+   用法： # <img class="title-icon" src="assets/img/ch-xx.webp" width="27" height="27" alt="">章节名
+
+   色带是章节主色，而图标本身也是彩色的（红球放在红带上直接糊成一片），
+   所以垫一块白色圆牌——原书的球本身就带白描边，效果一样。 */
+.markdown-section h1 .title-icon {
+    display: inline-block;
+    height: 1.15em;
+    width: auto;
+    margin-right: 0.05em;
+    padding: 0.1em;
+    box-sizing: content-box;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .22);
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   精灵球图标（位图）
+   ------------------------------------------------------------
+   用法：<img class="ball-icon" src="assets/img/ball-poke.webp" alt="精灵球">
+   图来自原书 PDF 的矢量图，抠成 128×128 透明底 webp，
+   生成脚本见 _dev/extract_ball_icons.py（改图就重跑那个脚本）。
+
+   为什么不用 CSS 画：原书的球有超级球的红斑、高级球的黑黄分色、
+   UB 球外扩的金翼……用纯 CSS 复刻要堆几十层渐变，还画不准。
+   位图在这里更省事、更忠实。
+
+   尺寸与对齐沿用 .beginner-ball 的算法：1.35em 的方框，
+   vertical-align 用固定长度（汉字视觉中心 0.35em − 盒高的一半），
+   不依赖字体度量，跨浏览器不会上下乱飘。
+   ============================================================ */
+/* 选择器带上 .markdown-section，是为了压过 .markdown-section img
+   里的 margin: 0.5rem 0 和 border-radius —— 行内图标不能被当成插图。
+   1.25em 是按原书量的：球直径 21.4pt，同排文字 19pt（封印表、等级表）
+   和 15pt（定制球表），也就是字号的 1.1～1.4 倍。 */
+.markdown-section .ball-icon {
+    display: inline-block;
+    /* 见 .side-icon 的说明：图标内容已统一到 87.5%，
+       盒子从 1.25em 收到 0.94em，球的实际直径保持 0.82em 不变。 */
+    width: 0.94em;
+    height: 0.94em;
+    margin: 0 0.28em 0 0;
+    border-radius: 0;
+    vertical-align: -0.12em;   /* 0.35em − 0.94em/2 */
+}
+
+/* 表格单元格里图标与文字同一行时，避免被撑高的行距顶开 */
+.markdown-section td .ball-icon {
+    /* 表格里的球要放大一档：0.94em 时球径只有 12px，
+       治愈球的十字、重复球的箭头这类纹样根本看不清。
+       表格里球是行首的主角，给到 1.35em（球径约 17px）。 */
+    width: 1.35em;
+    height: 1.35em;
+    vertical-align: -0.325em;   /* 0.35em − 1.35em/2 */
+}
+
+/* 精灵球表里球名下面的官方说明（52poke 的「包包信息」）
+   用法：球名<br><span class="ball-note">有点温柔的球。……</span>
+   比正文小一号、淡一档，读起来像图鉴的注释。 */
+.markdown-section td .ball-note {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-faint);
+    /* 表格首列是 `white-space: nowrap`（防止「人类年龄差/异」那种断法），
+       这行注释会跟着继承，于是整列被撑到最长那条说明的宽度。
+       注释本来就是长句，必须让它自己换行。 */
+    white-space: normal;
+}
+
+/* 等级球（入门级 … 冠军级）
+   用法：| 1 | <img class="rank-icon" src="assets/img/ball-poke.webp" alt="">入门级 Starter | …
+
+   原书的章节图标和等级球是**同一套球**：目录里每章一枚，Ranks 一节每个等级
+   也是同一枚（新手级=精灵球、正式级=超级球、资深级=高级球、专家级=黑暗球、
+   精英级=贵重球、大师级=大师球）。入门级和冠军级原书没有对应球，
+   用的是这两章自己的章节标记。
+   所以这里直接引用章节那批文件，别单独再做一套——做过一版，和章节对不上，
+   还多出八张要维护的图。
+
+   盒子比 .ball-icon 大一点：这里球是行首的视觉锚点，压太小就认不出颜色。 */
+.markdown-section .rank-icon {
+    display: inline-block;
+    width: 1.35em;
+    height: 1.35em;
+    margin: 0 0.34em 0 0;
+    border-radius: 0;
+    vertical-align: -0.325em;   /* 0.35em − 1.35em/2，和表格里的球同尺寸 */
+}
+
+/* ============================================================
+   道具图标（位图）
+   ------------------------------------------------------------
+   用法：<img class="item-icon" width="18" height="18"
+             src="assets/img/item-antidote.webp" alt="解毒药">
+   图来自道具册 PDF 的矢量图，透明底、96×96 画布，内容统一到 84px，
+   生成脚本见 _dev/extract_item_icons.py，写进表格见 _dev/apply_item_icons.py。
+
+   为什么和 .ball-icon 分开写：精灵球是圆形，1.25em 的方框刚好；
+   道具高一矮不一（防狼喷雾 6×20pt，露营炉具 28×21pt），
+   所以内容在画布里已经归一化到同一边长，这里只要给同一个方框就行。
+   ============================================================ */
+.markdown-section .item-icon {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    margin: 0 0.24em 0 0;
+    border-radius: 0;
+    vertical-align: -0.4em;   /* 0.35em - 1.5em/2 */
+}
+
+.markdown-section td .item-icon {
+    vertical-align: -0.385em;
+}
+
+@media print {
+    .markdown-section .item-icon {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+@media print {
+    .markdown-section .ball-icon {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* 章节标题里的小徽记（第一章「邪恶组织」各队的队徽、劲敌头像）
+   用法：### <img class="world-icon" src="assets/img/team-rocket.webp" alt=""> 火箭队
+   图片等比缩放到 1.15em 高，宽度自动；alt 留空，因为标题文字已经说明了。 */
+.markdown-section .world-icon {
+    display: inline-block;
+    /* 原书 p.16–18 的队徽明显比正文高一头（约 1.5 倍字高），
+       1.4em 的时候看着像个小标签，压不住标题。 */
+    height: 1.5em;
+    width: auto;
+    margin: 0 0.42em 0 0;
+    border-radius: 0;
+    vertical-align: -0.4em;    /* 0.35em - 1.5em/2 */
+}
+
+/* ============================================================
+   图片放大（点击正文插图弹出，脚本见 app.js 第 12 节）
+   ============================================================ */
+.markdown-section img:not(.ball-icon):not(.world-icon):not(.item-icon) {
+    cursor: zoom-in;
+}
+
+.img-zoom {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+}
+
+.img-zoom::backdrop {
+    background: rgba(12, 16, 24, 0.88);
+}
+
+.img-zoom img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 92vw;
+    max-height: 84vh;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+    cursor: default;
+}
+
+.img-zoom-tip {
+    display: block;
+    margin-top: 14px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+}
+
+@media print {
+    .img-zoom { display: none !important; }
+}
+
 /* ============================================================
    页内目录（右侧 TOC）
    ------------------------------------------------------------
@@ -2208,10 +3594,10 @@ body.search-open { overflow: hidden; }
 }
 
 .page-toc .toc-list a.active {
-    color: var(--poke-red);
+    color: var(--ch-deep);
     font-weight: 600;
-    background: var(--poke-red-light);
-    border-left-color: var(--poke-red);
+    background: var(--ch-wash);
+    border-left-color: var(--ch);
 }
 
 .page-toc .toc-l3 a { padding-left: 18px; }
@@ -2299,4 +3685,2540 @@ html.no-docsify .file-notice {
     color: #6b7280;
     font-size: 0.88rem;
     margin-bottom: 0;
+}
+
+/* ============================================================
+   章节页脚插画（scene-*）
+   ------------------------------------------------------------
+   原书几乎每页底部都压着一条横向场景插画，翻页时像在翻一本画册。
+   网页上是每章结尾放一张：正文读到底，正好收在一幅小景上。
+
+   图是 `_dev/extract_scene_art.py` 从 PDF 抠出来的透明底 webp，
+   所以不需要再垫底色，直接"印"在纸面上。
+   app.js 的 applyChapterTheme() 按章号挑图并挂到正文末尾。
+   ============================================================ */
+.markdown-section > .chapter-scene {
+    /* 左右同样吃负 margin 出血；顶部收一点，免得正文和画之间空太远 */
+    margin: 1.6rem calc(-1 * var(--pad-x)) 0;
+    line-height: 0;
+    pointer-events: none;   /* 纯装饰，别让它抢走点击 */
+}
+
+.markdown-section > .chapter-scene img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+@media (max-width: 640px) {
+    /* 手机上插画会缩得很矮，裁掉两侧一点、放大主体 */
+    .markdown-section > .chapter-scene {
+        overflow: hidden;
+    }
+    .markdown-section > .chapter-scene img {
+        width: 128%;
+        margin-left: -14%;
+    }
+}
+
+/* ============================================================
+   纸面组件（计算器 / 补盲图 / 掷骰器）
+   ------------------------------------------------------------
+   这几个交互面板原来是白底＋浅灰内槽，摆在新纸底上会像贴了一张白纸。
+   统一改成「比纸面深一档」的凹槽色：原书里的表格框、示例框都是这个思路——
+   不是提亮，而是压深，看起来才像印在纸上的一块色。
+   只覆盖颜色，布局和尺寸一律不动。
+   ============================================================ */
+.type-dual,
+.team-chart,
+.dice-roller {
+    background: var(--paper-tint);
+    border: 1px solid var(--paper-line);
+    box-shadow: 0 1px 2px rgba(70, 60, 35, .05);
+}
+
+/* 空槽位：再浅回去一点，和凹槽形成层次 */
+.td-slot:not(.is-filled),
+.td-slot.is-off {
+    background: var(--paper);
+    border-color: var(--paper-line);
+}
+.td-slot:not(.is-filled):hover,
+.td-slot.is-off:hover {
+    background: #fff;
+    border-color: var(--ch);
+}
+
+.tm-type,
+.tm-add {
+    background: var(--paper);
+    border-color: var(--paper-line);
+    color: var(--ink);
+}
+.tm-add:hover:not(:disabled) {
+    background: #fff;
+    border-color: var(--ch);
+}
+
+.tm-bar {
+    background: var(--paper-deep);
+}
+
+/* 掷骰器：数字框、加减键、骰子格 */
+.dr-step,
+.dr-count {
+    background: var(--paper);
+    border-color: var(--paper-line);
+    color: var(--ink);
+}
+.dr-step:hover {
+    background: #fff;
+    border-color: var(--ch);
+}
+.dr-die {
+    background: var(--paper-deep);
+    border-color: var(--paper-line);
+    color: #6b6558;
+}
+.dr-die.is-success {
+    background: var(--ch-wash);
+    border-color: color-mix(in srgb, var(--ch) 45%, transparent);
+    color: var(--ch-deep);
+}
+.dr-idle,
+.dr-log-empty {
+    color: var(--ink-faint);
+}
+
+/* ============================================================
+   2026-10-29 · 还原层（v3）
+   ------------------------------------------------------------
+   这一批全部是「照着原书重做」的组件，色值一律从 PDF 上采，
+   不是凭感觉调的。顺序：
+     14  点数条（属性表）     15  等级卡
+     16  联盟规则集海报       17  双防方案卡
+     18  地区标题色           19  竖版插图限宽
+     20  骰池 / 骰面          21  圆标旁注（训练家贴士 / 叙事者笔记）
+     22  开篇导语与骰子陈列   23  章名侧标
+   ============================================================ */
+
+/* ---------- 14. 点数条（属性表） ----------
+   原书 p.22–24、p.27 的属性表不是「表格」，是**一排胶囊条**：
+   左边一格放 6 个圆点（实心=当前值，空心=上限），右边一格放说明；
+   相邻两行深浅交替，行与行之间留一道缝。
+
+   写法不变——正文里还是 `|点数|效果|` 的表格，`app.js` 的
+   `markSkillTables()` 会给首列表头是「点数」的表挂上 .is-pip，
+   这里只负责把它画成胶囊。改样式不会影响正文。 */
+.markdown-section table.is-pip {
+    display: block;
+    width: 100%;
+    margin: 1.1rem 0 1.6rem;
+    border: 0;
+    border-collapse: separate;
+    border-spacing: 0 5px;
+    background: none;
+    font-size: 0.95rem;
+    /* 默认（基础能力）用原书的冷灰 */
+    --pip-a: #c7c8ca;
+    --pip-b: #dcddde;
+    --txt-a: #dcddde;
+    --txt-b: #f1f1f2;
+}
+
+/* 社交能力五条各自的色：原书 p.24 每项一个色系，不是统一灰 */
+.markdown-section table.is-pip[data-tone="tough"]  { --pip-a:#f6ed4b; --pip-b:#faf4a3; --txt-a:#faf4a3; --txt-b:#fffbcc; }
+.markdown-section table.is-pip[data-tone="cool"]   { --pip-a:#f7945f; --pip-b:#fcc7a3; --txt-a:#fcc7a3; --txt-b:#fee1d0; }
+.markdown-section table.is-pip[data-tone="beauty"] { --pip-a:#7f8fc8; --pip-b:#bbc0e1; --txt-a:#bbc0e1; --txt-b:#cfd8ee; }
+.markdown-section table.is-pip[data-tone="cute"]   { --pip-a:#ee9ec5; --pip-b:#f6cee1; --txt-a:#f6cee1; --txt-b:#fce7f0; }
+.markdown-section table.is-pip[data-tone="clever"] { --pip-a:#73c16b; --pip-b:#b8ddb0; --txt-a:#b8ddb0; --txt-b:#d8ecd4; }
+
+.markdown-section table.is-pip thead { display: none; }
+.markdown-section table.is-pip tbody { display: block; }
+
+.markdown-section table.is-pip tr {
+    display: flex;
+    align-items: stretch;
+    border: 0 !important;
+    background: none !important;
+    border-radius: 9px;
+    overflow: hidden;
+    min-height: 44px;
+}
+
+/* 奇数行：点格用深一档、其余格用中档。
+   底色要写在 **所有 td** 上，不能只写 last-child ——
+   幸福度 / 忠诚度是「点格 + 状态名 + 说明」三列，
+   只写 last-child 的话中间那格是透明的，看着像被挖了一块。 */
+.markdown-section table.is-pip tr:nth-child(odd) td { background: var(--txt-a); }
+.markdown-section table.is-pip tr:nth-child(odd) td:first-child { background: var(--pip-a); }
+/* 偶数行：整体浅一档，形成原书那种「隔行错色」 */
+.markdown-section table.is-pip tr:nth-child(even) td { background: var(--txt-b); }
+.markdown-section table.is-pip tr:nth-child(even) td:first-child { background: var(--pip-b); }
+
+.markdown-section table.is-pip td {
+    border: 0 !important;
+    padding: 0.62rem 0.95rem;
+    color: var(--ink);
+    line-height: 1.62;
+    vertical-align: middle;
+}
+
+/* 点格：定宽、**左对齐**、右侧一道极淡的分隔。
+   原书里 6 个圆点是从同一条左基准线开始的；
+   居中排的话，只有 5 个点的行和 6 个点的行左右都错开，看着像没对齐。 */
+.markdown-section table.is-pip td:first-child {
+    flex: 0 0 132px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: inset -1px 0 0 rgba(64, 64, 66, .10);
+}
+
+/* 三列版（幸福度 / 忠诚度）：点格 + 状态名 + 说明。
+   必须写 :not(:last-child)：两列表里第 2 格就是说明格，
+   不排除的话它会被钉成定宽，手机上文字直接顶出纸外。 */
+.markdown-section table.is-pip td:nth-child(2):not(:last-child) {
+    flex: 0 0 108px;
+    font-weight: 700;
+}
+.markdown-section table.is-pip td:last-child { flex: 1 1 auto; min-width: 0; }
+
+/* 圆点本身：正文里 `{{1/5}}` 生成的是 ● / ○ 字符，
+   字符在不同字体里大小不一，这里把字涂透明、只用它的盒子画圆，
+   于是实心/空心在任何一个浏览器里都一样大。 */
+.attribute-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.22em;
+    font-size: 1.12em;
+    letter-spacing: 0;
+}
+
+.attribute-dots > span {
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+    color: transparent;      /* 盖掉 ● ○ 字符，只留形状 */
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.attribute-dots > .attr-filled { background: #404042; }
+/* 骰池写法 {{成功/总数/总数}} 里，多出来的那几个是**没成功**的骰子。
+   原稿一直用红点标它们，别改成章节色 —— 换章以后会变成蓝点，意思就丢了。 */
+.attribute-dots > .attr-available { background: #e3350d; }
+.attribute-dots > .attr-empty {
+    background: #fff;
+    /* 描边必须画在**外面**。用 inset 的话，1.5px 的环会从白色圆盘里
+       啃掉一圈，白点看着比黑点小一号（实测直径小约 27%）。
+       改成外描边以后，白盘和黑盘一样大，只是多了一道 1px 的细线。 */
+    box-shadow: 0 0 0 1px rgba(64, 64, 66, .30);
+}
+
+/* 表格里的点比正文里的大一号，否则 6 个挤在 118px 里看不清 */
+.markdown-section table.is-pip .attribute-dots { font-size: 1.34em; }
+.markdown-section table.is-pip .attribute-dots > span { width: 0.54em; height: 0.54em; }
+
+@media (max-width: 640px) {
+    .markdown-section table.is-pip td:first-child { flex-basis: 110px; padding: 0.55rem 0.7rem; }
+    .markdown-section table.is-pip td:nth-child(2):not(:last-child) { flex-basis: 84px; }
+    .markdown-section table.is-pip td { padding: 0.55rem 0.7rem; font-size: 0.9rem; }
+}
+
+/* ---------- 15. 等级卡 ----------
+   原书 p.30–31 的八级是**八张卡片**：顶部一条章节色带，左边压着一枚等级球，
+   右上角一个数字方块；下面依次是说明、「建议成就」、「等级奖励」。
+   正文仍是 `### 新手级：2` 这样的三级标题，`app.js` 的 `wrapRankSections()`
+   把每个三级标题连同它后面的内容包进一张卡，标题本身留在里面，
+   所以右侧目录和锚点都不受影响。 */
+.rank-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin: 1.6rem 0 2rem;
+}
+
+@media (max-width: 860px) {
+    .rank-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+}
+
+.rank-card {
+    --rk: var(--ch);
+    --rk-deep: color-mix(in srgb, var(--rk) 78%, #000);
+    --rk-tint: color-mix(in srgb, var(--rk) 12%, var(--paper));
+    background: var(--rk-tint);
+    border-radius: 14px;
+    overflow: hidden;
+    padding: 0 0 4px;
+}
+
+/* 卡片头：色带 + 球 + 名字 + 编号 */
+.rank-card > h3 {
+    margin: 0 !important;
+    padding: 0.5rem 0.9rem 0.5rem 0.75rem !important;
+    background: var(--rk);
+    color: var(--rk-ink, #fff) !important;
+    font-size: 1.06rem !important;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 46px;
+    position: relative;
+    border: 0 !important;
+}
+
+/* 去掉 H3 默认的方块记号 */
+.rank-card > h3::before { display: none !important; }
+
+.rank-card > h3 .anchor,
+.rank-card > h3 .anchor span { color: var(--rk-ink, #fff) !important; }
+
+/* 等级球：白底圆牌，和原书一样压在色带左端 */
+.rank-card > h3 .rank-ball {
+    flex: 0 0 auto;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 3px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .22);
+    margin: 0 !important;
+    display: block;
+}
+
+/* 右上角的编号方块 */
+.rank-card > h3 .rank-no {
+    margin-left: auto;
+    background: rgba(255, 255, 255, .92);
+    color: var(--rk-deep);
+    font-weight: 900;
+    font-size: 0.92rem;
+    line-height: 1;
+    padding: 0.28em 0.5em;
+    border-radius: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
+.rank-card > p {
+    margin: 0.85rem 1rem 0.6rem;
+    color: var(--ink);
+    font-size: 0.94rem;
+    line-height: 1.75;
+}
+
+/* 正文里的粗体小标题（「达成此阶的建议成就」「等级奖励」）
+   跟本卡色带走，不跟章节色 */
+.rank-card > p strong { color: var(--rk-deep); }
+
+/* 「达成此阶的建议成就」这种小标题：原书用章节色粗体，无记号 */
+.rank-card > h4 {
+    margin: 0.9rem 1rem 0.35rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    color: var(--rk-deep) !important;
+    letter-spacing: 0.02em;
+}
+
+.rank-card > ul {
+    margin: 0 1rem 0.5rem !important;
+    padding-left: 1.05rem !important;
+    list-style: none;
+}
+
+.rank-card > ul > li {
+    position: relative;
+    margin: 0 0 0.22rem !important;
+    padding-left: 0.1rem;
+    font-size: 0.92rem;
+    line-height: 1.66;
+    color: var(--ink);
+}
+
+/* 项目符号改成原书那种实心小方块 */
+.rank-card > ul > li::before {
+    content: "";
+    position: absolute;
+    left: -0.85rem;
+    top: 0.66em;
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--rk);
+}
+
+.rank-card > *:last-child { margin-bottom: 0.9rem !important; }
+
+/* 卡片里不该再套一层纸色背景的旁注，统一压平 */
+.rank-card .storyteller-note,
+.rank-card .tip-card { margin-left: 1rem; margin-right: 1rem; }
+
+/* ---------- 16. 宝可梦联盟 · 训练家规则集（原书 p.15 整页插页） ----------
+   原书这一页是**灰色纸的插页**：深色抬头 + 四条「缎带」小节标题
+   （灰 / 近黑 / 青 / 红，各配一条方格旗）+ 深色方块项目符号。
+   网页上做成整幅出血的灰块，读起来像夹在书里的一张纸。
+
+   结构没动，还是 `_sidebar` 之外那个 <details id="league-rules">，
+   只是把 .collapsible-insert 的那套「白底 + 左右竖条」换掉了。 */
+.markdown-section .collapsible-insert#league-rules {
+    --poster-bg: #a9aba6;
+    --poster-bar: #e8e8e4;
+    --poster-ink: #2b2b2c;
+    background: var(--poster-bg);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 2.2rem calc(-1 * var(--pad-x)) 2.6rem;
+}
+
+/* 抬头：深色带 + 联盟徽标 + 中文章名 */
+.markdown-section .collapsible-insert#league-rules .insert-header {
+    background: #3c3e41;
+    color: #fff;
+    padding: 18px calc(var(--pad-x) + 14px) 18px calc(var(--pad-x) + 92px);
+    min-height: 76px;
+    position: relative;
+    border-bottom: 0;
+    cursor: pointer;
+}
+
+.markdown-section .collapsible-insert#league-rules .insert-header::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--pad-x) + 16px);
+    top: 50%;
+    width: 60px;
+    height: 60px;
+    margin-top: -30px;
+    background: url(img/league-mark.webp) center / contain no-repeat;
+    opacity: .92;
+}
+
+/* 抬头右侧的方格旗 */
+.markdown-section .collapsible-insert#league-rules .insert-header::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 86px;
+    height: 100%;
+    background-image:
+        linear-gradient(45deg, #6d7073 25%, transparent 25%, transparent 75%, #6d7073 75%),
+        linear-gradient(45deg, #6d7073 25%, transparent 25%, transparent 75%, #6d7073 75%);
+    background-size: 22px 22px;
+    background-position: 0 0, 11px 11px;
+    opacity: .55;
+    mask-image: linear-gradient(to right, transparent, #000 40%);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 40%);
+}
+
+/* 「一定要遵守规则」小徽章：改成抬头下方的一行小字 */
+.markdown-section .collapsible-insert#league-rules .insert-badge {
+    background: none;
+    color: #b9bcb6;
+    font-family: inherit;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    padding: 0;
+    border-radius: 0;
+    display: block;
+    margin-bottom: 3px;
+    text-transform: none;
+}
+
+.markdown-section .collapsible-insert#league-rules .insert-title {
+    font-size: 1.32rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #fff;
+    line-height: 1.35;
+}
+
+.markdown-section .collapsible-insert#league-rules .insert-header .arrow { color: #b9bcb6; }
+.markdown-section .collapsible-insert#league-rules.open .insert-header { border-bottom-color: transparent; }
+
+/* 正文区 */
+.markdown-section .collapsible-insert#league-rules .insert-body,
+.markdown-section .collapsible-insert#league-rules.open .insert-body {
+    padding: 0 calc(var(--pad-x) + 10px) 26px;
+}
+
+/* 四条缎带 */
+.markdown-section .collapsible-insert#league-rules .sub-section {
+    --wedge: #404042;
+    margin: 22px 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.markdown-section .collapsible-insert#league-rules .sub-section:nth-of-type(1) { --wedge: #404042; }
+.markdown-section .collapsible-insert#league-rules .sub-section:nth-of-type(2) { --wedge: #2b2d30; }
+.markdown-section .collapsible-insert#league-rules .sub-section:nth-of-type(3) { --wedge: #396873; }
+.markdown-section .collapsible-insert#league-rules .sub-section:nth-of-type(4) { --wedge: #af3f3a; }
+
+.markdown-section .collapsible-insert#league-rules .sub-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 42px;
+    background: var(--poster-bar);
+    color: var(--poster-ink);
+    font-size: 1.06rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    margin: 0 0 14px;
+    padding: 0 12px 0 14px;
+    position: relative;
+}
+
+/* 左端的深色燕尾（原书是「旗尾」形状，左侧挖一个 V 口） */
+.markdown-section .collapsible-insert#league-rules .sub-section-title::before {
+    content: "";
+    position: absolute;
+    left: -26px;
+    top: 0;
+    width: 26px;
+    height: 42px;
+    background: var(--wedge);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 38% 50%);
+}
+
+/* 右端的方格旗收尾 */
+.markdown-section .collapsible-insert#league-rules .sub-section-title::after {
+    content: "";
+    position: absolute;
+    right: 8px;
+    top: 9px;
+    width: 46px;
+    height: 24px;
+    background-image:
+        linear-gradient(45deg, var(--wedge) 25%, transparent 25%, transparent 75%, var(--wedge) 75%),
+        linear-gradient(45deg, var(--wedge) 25%, transparent 25%, transparent 75%, var(--wedge) 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 6px 6px;
+    opacity: .55;
+}
+
+/* 条目：原书是深色小方块，方块颜色跟着缎带走 */
+.markdown-section .collapsible-insert#league-rules .insert-body ul {
+    margin: 0 0 4px;
+    padding-left: 1.15rem;
+    list-style: none;
+    columns: 2;
+    column-gap: 2.2rem;
+}
+
+.markdown-section .collapsible-insert#league-rules .insert-body li {
+    position: relative;
+    color: var(--poster-ink);
+    font-size: 0.94rem;
+    line-height: 1.68;
+    margin: 0 0 0.55rem;
+    break-inside: avoid;
+}
+
+.markdown-section .collapsible-insert#league-rules .insert-body li::before {
+    content: "";
+    position: absolute;
+    left: -1rem;
+    top: 0.62em;
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--wedge);
+}
+
+/* 落款 */
+.markdown-section .collapsible-insert#league-rules .insert-footer {
+    margin: 22px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid rgba(43, 43, 44, .25);
+    color: #3f3f40;
+    font-size: 0.72rem;
+    text-align: center;
+    font-style: normal;
+    line-height: 1.7;
+}
+
+@media (max-width: 780px) {
+    .markdown-section .collapsible-insert#league-rules .insert-body ul { columns: 1; }
+    .markdown-section .collapsible-insert#league-rules .insert-header {
+        padding-left: calc(var(--pad-x) + 74px);
+    }
+    .markdown-section .collapsible-insert#league-rules .insert-header::before {
+        width: 46px; height: 46px; margin-top: -23px;
+    }
+    .markdown-section .collapsible-insert#league-rules .insert-title { font-size: 1.08rem; }
+    .markdown-section .collapsible-insert#league-rules .sub-section-title { letter-spacing: 0.08em; }
+}
+
+/* ---------- 17. 双防方案卡（原书 p.28 的两个灰色方案框） ----------
+   原书把「方案一 / 方案二」做成两张并排的灰卡，卡里是
+   「That means…」+ Pros / Cons 两列。网页上照抄这个结构。 */
+.scheme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin: 1.5rem 0 2rem;
+}
+
+@media (max-width: 780px) {
+    .scheme-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.scheme-card {
+    background: color-mix(in srgb, var(--ch) 7%, var(--paper-tint));
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.scheme-card > h4 {
+    margin: 0 !important;
+    padding: 0.62rem 1rem !important;
+    border: 0 !important;
+    background: var(--ch-deep);
+    color: #fff !important;
+    font-size: 0.96rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.02em;
+}
+
+.scheme-card > p {
+    margin: 0.8rem 1rem 0.2rem;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--ink);
+}
+
+.scheme-card > p strong { color: var(--ch-deep); }
+
+/* Pros / Cons 两列 */
+.scheme-card .pc {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0.5rem 1rem 1rem;
+    margin-top: auto;
+}
+
+.scheme-card .pc > div {
+    background: rgba(255, 255, 255, .55);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+}
+
+.scheme-card .pc b {
+    display: block;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.35rem;
+}
+
+.scheme-card .pc .pro b { color: #2f7d52; }
+.scheme-card .pc .con b { color: #a33a2e; }
+
+.scheme-card .pc ul {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none;
+}
+
+.scheme-card .pc li {
+    position: relative;
+    padding-left: 0.85rem;
+    margin: 0 0 0.18rem !important;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    color: var(--ink);
+}
+
+.scheme-card .pc .pro li::before,
+.scheme-card .pc .con li::before {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+.scheme-card .pc .pro li::before { content: "+"; color: #2f7d52; }
+.scheme-card .pc .con li::before { content: "−"; color: #a33a2e; }
+
+/* ---------- 18. 地区标题色 ----------
+   原书世界地图上每个地区一个颜色。网页上把这套颜色直接用在
+   小节标题的方块和字上，读者可以拿标题色去对地图。
+   颜色由 `app.js` 的 `tintRegions()` 按标题文字写进 --rc。 */
+.markdown-section h3[data-region] {
+    color: var(--rc-deep) !important;
+}
+
+.markdown-section h3[data-region]::before {
+    background: var(--rc) !important;
+    border-radius: 2px;
+}
+
+/* 地区名后面跟一枚小小的色标，像地图图例 */
+.markdown-section h3[data-region]::after {
+    content: "";
+    display: inline-block;
+    width: 0.42em;
+    height: 0.42em;
+    margin-left: 0.45em;
+    border-radius: 50%;
+    background: var(--rc);
+    opacity: .55;
+    vertical-align: 0.06em;
+}
+
+/* ---------- 19. 竖版插图限宽 ----------
+   角色卡、训练家证这类图在原书里只占 1/3 栏宽，网页上撑满 862px
+   就变成一张巨幅海报。`app.js` 的 `fitPortraitFigures()` 按
+   图片自身的宽高比判断：高的收窄到 460px，横的照旧铺满。 */
+.markdown-section p > img.is-portrait {
+    max-width: 460px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 640px) {
+    .markdown-section p > img.is-portrait { max-width: 100%; }
+}
+
+/* ---------- 20. 骰池与骰面 ----------
+   原书 p.34 的骰子是**斜放的正方形 + 白点**（六面各一张），
+   骰池就是把这张骰面和一个数字方块叠在一起。
+   之前 `.dice-pool` 是纯 CSS 画的（旋转方块 + 径向渐变点），
+   现在换成从原书抠出来的真骰面 `die-*.webp`，形状和点距都对得上。
+
+   用法不变：<span class="dice-pool" data-n="4"></span> */
+.dice-pool {
+    display: inline-block;
+    position: relative;
+    width: 2.55em;
+    height: 2.35em;
+    margin: 0 0.2em;
+    vertical-align: -0.85em;
+}
+
+/* 骰子本体：用原书「5 点」那张，斜着的方向一致 */
+.dice-pool::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.72em;
+    height: 1.72em;
+    background: url(img/die-5.webp) center / contain no-repeat;
+}
+
+/* 右下角的数字方块 */
+.dice-pool::after {
+    content: attr(data-n);
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    min-width: 1.28em;
+    height: 1.28em;
+    padding: 0 0.14em;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #6e6d5e;
+    border: 2px solid #fff;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 0.86em;
+    font-weight: 900;
+    line-height: 1;
+    font-family: "Arial Black", Impact, sans-serif;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .22);
+    z-index: 1;
+}
+
+/* 单独一颗骰面：<span class="die" data-n="4"></span> */
+.die {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: -0.42em;
+    margin: 0 0.1em;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+.die[data-n="1"] { background-image: url(img/die-1.webp); }
+.die[data-n="2"] { background-image: url(img/die-2.webp); }
+.die[data-n="3"] { background-image: url(img/die-3.webp); }
+.die[data-n="4"] { background-image: url(img/die-4.webp); }
+.die[data-n="5"] { background-image: url(img/die-5.webp); }
+.die[data-n="6"] { background-image: url(img/die-6.webp); }
+
+/* 一排骰面（开篇「你需要的工具」、掷骰页抬头都用这个） */
+.dice-showcase {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 1.6rem 0 0.6rem;
+    padding: 18px 12px;
+    background: var(--paper-tint);
+    border-radius: 14px;
+}
+
+.dice-showcase .die {
+    width: 2.7rem;
+    height: 2.7rem;
+    margin: 0;
+    vertical-align: baseline;
+}
+
+.dice-showcase .dc-caption {
+    flex: 1 0 100%;
+    text-align: center;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin-top: 2px;
+}
+
+/* ---------- 21. 圆标旁注（叙事者笔记 / 训练家贴士） ----------
+   原书这两种旁注都长一个样：左边一枚**圆形徽章**（灰的写
+   Storyteller Note、红的写 Trainer Tips），右边一块浅色纸。
+   网页上原来把标签做成了小药丸，这里换成圆标。 */
+.markdown-section .storyteller-note,
+.markdown-section .trainer-tip {
+    position: relative;
+    padding: 18px 22px 16px 112px;
+    min-height: 104px;
+}
+
+.markdown-section .storyteller-note .note-label,
+.markdown-section .trainer-tip .tip-label {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 78px;
+    height: 78px;
+    margin: 0;
+    padding: 0 6px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.32;
+    letter-spacing: 0;
+    box-shadow: 0 2px 6px rgba(70, 60, 35, .18);
+}
+
+.markdown-section .storyteller-note .note-label {
+    background: #6e6e66;
+    color: #fff;
+}
+
+.markdown-section .trainer-tip .tip-label {
+    background: #cb4236;
+    color: #fff;
+}
+
+/* 圆标里的「emoji 一行 + 两行中文」是 app.js 拆好的两段：
+   .ico 是原书圆标顶上那个小图标，.txt 是徽章名。 */
+.markdown-section .storyteller-note .note-label .ico,
+.markdown-section .trainer-tip .tip-label .ico {
+    font-size: 1.15rem;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+.markdown-section .storyteller-note .note-label .txt,
+.markdown-section .trainer-tip .tip-label .txt {
+    display: block;
+    max-width: 4.4em;
+    /* 「叙事者笔记」五个字，不均衡的话会断成 4+1，最后那个「记」孤零零一行。
+       text-wrap: balance 会挑最匀的断法（3+2）；老浏览器忽略这条，
+       只是回到 4+1，不影响功能。 */
+    text-wrap: balance;
+}
+
+@media (max-width: 640px) {
+    .markdown-section .storyteller-note,
+    .markdown-section .trainer-tip { padding: 64px 16px 14px; }
+    .markdown-section .storyteller-note .note-label,
+    .markdown-section .trainer-tip .tip-label {
+        left: 16px;
+        top: 12px;
+        transform: none;
+        width: 42px;
+        height: 42px;
+        font-size: 0.5rem;
+    }
+}
+
+/* ---------- 22. 开篇导语 ----------
+   原书每章第一段都比正文大一号，用来把读者领进来。
+   只在 00 引言生效（其它章的正文没有这个排法）。 */
+body[data-chapter="00"] .markdown-section h1 + p {
+    font-size: 1.1rem;
+    line-height: 1.95;
+    color: #33333a;
+    padding-left: 1rem;
+    border-left: 4px solid var(--ch);
+    margin-bottom: 1.6rem;
+}
+
+/* 联盟海报抬头里的三行小字：徽章 / 主标题 / 副题 */
+.markdown-section .collapsible-insert#league-rules .insert-lockup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.markdown-section .collapsible-insert#league-rules .insert-sub {
+    font-size: 0.72rem;
+    color: #b9bcb6;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+}
+
+/* 海报里不该再出现「白底块」，所有子元素都跟着灰纸走 */
+.markdown-section .collapsible-insert#league-rules .insert-body strong {
+    color: #1f1f20;
+}
+
+/* ---------- 22.5 点数图例 ----------
+   02 章「基础能力」开头那六条 `- {{1}} 点为低`，
+   原书排成两列图例，这里照做。 */
+.markdown-section ul:has(> li .attribute-dots) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px 18px;
+    padding-left: 0;
+    margin: 1rem 0 1.4rem;
+    list-style: none;
+}
+
+.markdown-section ul:has(> li .attribute-dots) > li {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0;
+    padding: 0.3em 0;
+    font-size: 0.92rem;
+    color: var(--ink);
+}
+
+.markdown-section ul:has(> li .attribute-dots) > li::before { display: none; }
+
+@media (max-width: 640px) {
+    .markdown-section ul:has(> li .attribute-dots) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2px 12px;
+    }
+    .markdown-section ul:has(> li .attribute-dots) > li {
+        font-size: 0.86rem;
+    }
+}
+
+/* ---------- 24. 掷骰台：换成原书的骰面 ----------
+   掷骰结果原来是一格数字方块，现在一格一颗「原书骰」：
+   底图是 die-*.webp（从《3.0系统详解》p.34 抠的），成功的那颗垫一层红纸。 */
+.dr-die,
+.dr-die.is-success {
+    width: 46px;
+    height: 46px;
+    display: block;
+    padding: 0;
+    border: 1px solid var(--paper-line);
+    border-radius: 10px;
+    background-color: #e9e5d8;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 38px 38px;
+    font-size: 0;
+    color: transparent;
+    overflow: hidden;
+    transition: background-color .15s, border-color .15s, transform .15s;
+}
+
+.dr-die[data-n="1"] { background-image: url(img/die-1.webp); }
+.dr-die[data-n="2"] { background-image: url(img/die-2.webp); }
+.dr-die[data-n="3"] { background-image: url(img/die-3.webp); }
+.dr-die[data-n="4"] { background-image: url(img/die-4.webp); }
+.dr-die[data-n="5"] { background-image: url(img/die-5.webp); }
+.dr-die[data-n="6"] { background-image: url(img/die-6.webp); }
+
+.dr-die.is-success {
+    background-color: #f6ddd6;
+    border-color: #d99a8f;
+    box-shadow: 0 1px 0 rgba(203, 66, 54, .25);
+}
+
+/* 掷出动画：每颗骰子错开一点点，像真的撒了一把 */
+@keyframes dieIn {
+    0%   { transform: translateY(-6px) scale(.86); opacity: 0; }
+    100% { transform: none; opacity: 1; }
+}
+.dr-dice .dr-die {
+    animation: dieIn .28s cubic-bezier(.2, .9, .3, 1.3) both;
+}
+.dr-dice .dr-die:nth-child(2n)  { animation-delay: .03s; }
+.dr-dice .dr-die:nth-child(3n)  { animation-delay: .06s; }
+.dr-dice .dr-die:nth-child(4n)  { animation-delay: .09s; }
+.dr-dice .dr-die:nth-child(5n)  { animation-delay: .12s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .dr-dice .dr-die { animation: none; }
+}
+
+/* ---------- 25. 开团速查台（gm-screen.md） ----------
+   这一页不是章节，是一张「叙事者挡板」：十几块面板摊在一屏里，
+   每块一个颜色，扫一眼就能找到要找的那条。
+   颜色借的是原书各章的主色，但只当**面板标签**用，不改变页面主题
+   （速查页整体仍然回落到灰色，这条别改）。 */
+.gm-screen {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 1.6rem 0 2rem;
+    align-items: start;
+}
+
+@media (max-width: 820px) {
+    .gm-screen { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}
+
+.gm-panel {
+    --ac: #8d9092;
+    background: var(--paper-tint);
+    border-radius: 14px;
+    padding: 16px 18px 14px;
+    box-shadow: 0 1px 0 rgba(70, 60, 35, .07), 0 6px 18px -12px rgba(70, 60, 35, .45);
+    min-width: 0;
+}
+
+/* 面板配色：判定 / 难度 / 行动 / 伤害 / 意志 / 双防 / 等级 / 时间 / 属性 */
+.gm-panel:nth-child(1) { --ac: #2899c1; }   /* 判定三步 */
+.gm-panel:nth-child(2) { --ac: #f4823a; }   /* 伤害骰池 */
+.gm-panel:nth-child(3) { --ac: #7b6fc4; }   /* 意志值 */
+.gm-panel:nth-child(4) { --ac: #4fae7a; }   /* 双防方案 */
+.gm-panel:nth-child(5) { --ac: #d4a017; }   /* 等级 */
+.gm-panel:nth-child(6) { --ac: #e8962f; }   /* 年龄 */
+.gm-panel:nth-child(7) { --ac: #3f8fd2; }   /* 时间计量 */
+
+/* 等级表是七列，半栏宽会把「名称」压成一列单字，让它横跨两栏 */
+.gm-panel:nth-child(5) { grid-column: 1 / -1; }
+/* 等级表横跨两栏，宽度也让它铺满 —— 七列挤在左边一小条，
+   右边空一大片，看着像表格没做完。 */
+.gm-panel:nth-child(5) table { font-size: 0.9rem; width: 100%; }
+
+.gm-panel > h2 {
+    margin: 0 0 0.75rem !important;
+    padding: 0 0 0.5rem !important;
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    color: color-mix(in srgb, var(--ac) 74%, #000) !important;
+    border-bottom: 2px solid color-mix(in srgb, var(--ac) 34%, transparent);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.4;
+}
+
+/* 面板标题不画那排圆点，改成一个小色块。
+   注意 h2::before 原本是 position:absolute 的整行点线，这里必须
+   把 position / left / right / top 全部复位，否则色块会浮在标题上。 */
+.gm-panel > h2::before {
+    content: "" !important;
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: 0.62em;
+    height: 0.62em;
+    border-radius: 2px;
+    background: var(--ac) !important;
+    background-image: none !important;
+    flex: 0 0 auto;
+    opacity: 1;
+}
+
+.gm-panel > h2 .anchor,
+.gm-panel > h2 .anchor span { color: inherit !important; }
+
+.gm-panel > p {
+    margin: 0.5rem 0 0.6rem;
+    font-size: 0.9rem;
+    line-height: 1.72;
+    color: var(--ink);
+}
+
+.gm-panel > p:first-of-type { margin-top: 0; }
+
+.gm-panel > ol,
+.gm-panel > ul {
+    margin: 0.4rem 0 0.6rem;
+    padding-left: 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.gm-panel > ol > li,
+.gm-panel > ul > li { margin-bottom: 0.3rem; }
+
+/* 面板里的表格：表头不用实心章节色，改成浅底 + 深字，免得几块面板打架 */
+.gm-panel table {
+    margin: 0.4rem 0 0.5rem;
+    font-size: 0.86rem;
+    border-collapse: collapse;
+}
+
+.gm-panel thead th {
+    background: color-mix(in srgb, var(--ac) 22%, var(--paper)) !important;
+    color: color-mix(in srgb, var(--ac) 72%, #000) !important;
+    font-weight: 800;
+    border-radius: 0;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.8rem;
+}
+
+/* 表格不写死 100% 宽：让它按内容自然分配列宽，
+   再用 max-width 兜住超宽的情况。
+   （写死 100% 时浏览器会把多出来的宽度平均分给每一列，
+   「低 / 优秀」这种一两个字的列会空出一大片。） */
+.gm-panel table { width: auto; max-width: 100%; }
+
+.gm-panel th:first-child,
+.gm-panel td:first-child { text-align: center; }
+
+.gm-panel th:not(:first-child),
+.gm-panel td:not(:first-child) { text-align: left; }
+
+.gm-panel td {
+    padding: 0.4rem 0.55rem;
+    border-bottom: 1px solid var(--paper-line) !important;
+    line-height: 1.6;
+}
+
+.gm-panel tr:nth-child(2n) { background: transparent !important; }
+.gm-panel tr:nth-child(odd) { background: rgba(255, 255, 255, .35) !important; }
+
+/* 面板里的旁注压扁，别把面板撑成两倍高 */
+.gm-panel .tip-card,
+.gm-panel .rule-card,
+.gm-panel .trainer-tip,
+.gm-panel .storyteller-note {
+    margin: 0.6rem 0 0.2rem;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+}
+
+.gm-panel .trainer-tip,
+.gm-panel .storyteller-note { padding: 12px 14px 12px 74px; min-height: 72px; }
+
+.gm-panel .trainer-tip .tip-label,
+.gm-panel .storyteller-note .note-label {
+    left: 10px;
+    width: 54px;
+    height: 54px;
+    font-size: 0.56rem;
+}
+
+.gm-panel .trainer-tip .tip-label .ico,
+.gm-panel .storyteller-note .note-label .ico { font-size: 0.92rem; margin-bottom: 1px; }
+
+.gm-panel p { font-size: 0.88rem; }
+
+/* ---------- 26. 性格卡（原书 p.44–47） ----------
+   原书二十五个性格是**两列卡片**：橙色名字条（居中）+ 深灰特质条（斜体白字）
+   + 正文。正文仍是 `### 固执 Adamant`，`app.js` 的 `wrapNatureCards()` 包成卡片。 */
+.nature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 24px;
+    margin: 1.6rem 0 2.2rem;
+    align-items: start;
+}
+
+@media (max-width: 780px) {
+    .nature-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+}
+
+.nature-card { min-width: 0; }
+
+/* 名字条：色值取自 PDF（#fbb040），配深褐字，不用章节橙 */
+.nature-card > h3 {
+    margin: 0 !important;
+    padding: 0.42rem 0.9rem !important;
+    background: #fbb040;
+    color: #4a2c07 !important;
+    border: 0 !important;
+    border-radius: 7px 7px 0 0;
+    font-size: 1.04rem !important;
+    font-weight: 800 !important;
+    line-height: 1.5;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+/* 去掉三级标题默认的方块记号 */
+.nature-card > h3::before { display: none !important; }
+.nature-card > h3 .anchor,
+.nature-card > h3 .anchor span { color: #4a2c07 !important; }
+
+.nature-card .nc-zh { letter-spacing: 0.04em; }
+
+.nature-card .nc-en {
+    /* 中英文都在同一个 <a class="anchor"> 里，靠 margin 拉开，
+       用 h3 的 flex gap 是拉不动的（anchor 才是 flex 项）。 */
+    margin-left: 0.5em;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.62;
+}
+
+/* 特质条：#636466，斜体白字，和原书一样 */
+.nature-card .nc-traits {
+    background: #636466;
+    color: #fff;
+    font-style: italic;
+    text-align: center;
+    font-size: 0.83rem;
+    line-height: 1.5;
+    padding: 0.36rem 0.9rem;
+    letter-spacing: 0.02em;
+}
+
+.nature-card > p {
+    margin: 0.85rem 0.15rem 0.6rem;
+    font-size: 0.93rem;
+    line-height: 1.78;
+    color: var(--ink);
+}
+
+.nature-card > p:last-child { margin-bottom: 0; }
+.nature-card > p strong { color: var(--ink); }
+
+/* 卡片后面紧跟的收尾句（「训练家的性格一旦确定便无法更改」）
+   不属于任何一张卡，给它一点上边距，别贴着卡片网格 */
+.nature-grid + p { margin-top: 0.4rem; }
+
+/* ---------- 27. 精灵球表的列宽 ----------
+   这几张表都是「球名 + 封印强度 + 效果」三列。球名下面挂着一行官方说明
+   （`.ball-note`），最长的那条会把第一列撑到 390px，浏览器只好去压第三列，
+   效果就被挤成一行两三个字。
+   这里给三列定死比例：球名 42%、强度 16%、剩下全给效果。 */
+.markdown-section table:has(td > .ball-note) th:nth-child(1),
+.markdown-section table:has(td > .ball-note) td:nth-child(1) { width: 42%; }
+
+.markdown-section table:has(td > .ball-note) th:nth-child(2),
+.markdown-section table:has(td > .ball-note) td:nth-child(2) {
+    width: 16%;
+    white-space: nowrap;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .markdown-section table:has(td > .ball-note) th:nth-child(1),
+    .markdown-section table:has(td > .ball-note) td:nth-child(1) { width: 46%; }
+    .markdown-section table:has(td > .ball-note) th:nth-child(2),
+    .markdown-section table:has(td > .ball-note) td:nth-child(2) {
+        width: 18%;
+        white-space: normal;
+    }
+}
+
+/* ---------- 28. 属性强化表（道具 | 属性） ----------
+   两列表，右列只有一个两字属性名。铺满整张纸会空一大片，
+   改成按内容收缩、左对齐，右列留出对称的内边距。 */
+.markdown-section table.is-attr {
+    width: 46%;
+    min-width: 300px;
+    max-width: 560px;
+}
+
+.markdown-section table.is-attr th:nth-child(2),
+.markdown-section table.is-attr td:nth-child(2) {
+    width: auto;
+    padding-left: 2.6rem;
+    padding-right: 2.6rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .markdown-section table.is-attr th:nth-child(2),
+    .markdown-section table.is-attr td:nth-child(2) {
+        padding-left: 1.2rem;
+        padding-right: 1.2rem;
+    }
+}
+
+/* ---------- 29. 树果表（树果 | 稀有 | 效果） ----------
+   「降能力果」那张第三列只有一个词（力量/物防…），
+   按 width:100% 排会把「稀有」拉成最宽的一列。改成按内容收缩。 */
+.markdown-section table.is-berry {
+    width: auto;
+    max-width: 100%;
+}
+
+.markdown-section table.is-berry th:nth-child(2),
+.markdown-section table.is-berry td:nth-child(2) {
+    width: 4.5em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .markdown-section table.is-berry { width: 100%; }
+}
+
+/* ---------- 30. 带价格的表（道具 | 价格 | 效果） ----------
+   价格列只有三四位数，却按 width:100% 平均分会占掉一大片。
+   这里只钉死价格列，剩下的宽度全给效果列，表格仍然铺满整行。 */
+.markdown-section table.is-price th:nth-child(2),
+.markdown-section table.is-price td:nth-child(2) {
+    width: 6.5em;
+    text-align: right;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .markdown-section table.is-price th:nth-child(2),
+    .markdown-section table.is-price td:nth-child(2) { width: 4.5em; }
+}
+
+/* ============================================================
+   第四章「宝可梦对战」的还原组件
+   ------------------------------------------------------------
+   这一章原书是一本 42 页的彩色图鉴：属性表、状态卡、天气卡、
+   环境挑战卡、对战场地示意图。组件全部照原书 p.52–93 排，
+   配色逐张从 PDF 采样（见每块注释里的色值）。
+   卡片由 app.js 的 wrapBattleCards() 在渲染后从正文搬出来，
+   正文 .md 保持「能直接读」的写法。
+   ============================================================ */
+
+/* ---------- 31. 属性小标签 ----------
+   原书每个属性名都是一块彩色圆角条：白字，浅色属性用深字。
+   颜色直接复用 .type-* 的 --type-bg / --type-ink，不另开一套色。 */
+.type-chip {
+    display: inline-block;
+    padding: 0.06em 0.46em;
+    margin: 0.1em 0.14em 0.1em 0;
+    border-radius: 0.4em;
+    font-size: 0.86em;
+    font-weight: 700;
+    line-height: 1.62;
+    color: var(--type-ink, #fff);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.markdown-section table td .type-chip {
+    margin: 0.1em 0.14em;
+}
+
+/* 属性表（属性 | 特征）：第一列只有一个属性名，钉死宽度 */
+.markdown-section table.is-typeline th:first-child,
+.markdown-section table.is-typeline td:first-child {
+    width: 5.2em;
+    white-space: nowrap;
+}
+
+/* 防御相克表：四列全是属性条，让它们自然换行、顶端对齐 */
+.markdown-section table.is-typechart td {
+    vertical-align: top;
+    line-height: 1.9;
+}
+
+.markdown-section table.is-typechart td:first-child {
+    width: 6em;
+    white-space: nowrap;
+}
+
+/* ---------- 32. 伤害档位标记（+1 / -1 / +2 / -2 / 无） ----------
+   原书这五档是五个绿色面板，档位靠正文里的「额外 +1」表达。
+   网页上补一枚小标记，扫一眼就知道加几减几。
+   红＝伤害增加、绿＝伤害减少，和属性相克表的习惯一致。 */
+.dmg-mod {
+    display: inline-block;
+    min-width: 2.3em;
+    padding: 0.05em 0.4em;
+    margin-right: 0.5em;
+    border-radius: 0.35em;
+    font-size: 0.78em;
+    font-weight: 800;
+    line-height: 1.6;
+    text-align: center;
+    vertical-align: 0.12em;
+    font-variant-numeric: tabular-nums;
+}
+.dmg-mod.up   { background: #e04a2f; color: #fff; }
+.dmg-mod.down { background: #2f8f5b; color: #fff; }
+.dmg-mod.zero { background: #6f6f6f; color: #fff; }
+
+/* ---------- 33. 异常状态卡（原书 p.84–85） ----------
+   一张卡三段：彩色抬头（名称 + 类型）／风味描述（浅纸色）／
+   两条深色小标题带 + 灰色正文。色值逐张采自 PDF：
+   灼伤1 #f05a22、灼伤2 #c5351b、灼伤3 #9e1b0e、混乱 #00b27c、
+   定身法 #282829、麻痹 #eddb00、畏缩 #555d69、冰冻 #87d1d1、
+   着迷 #f05a7d、中毒 #956597、剧毒 #774386、睡眠 #b4b68b。 */
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.4rem 0 1.6rem;
+    align-items: start;
+}
+
+.status-card {
+    --sc: #888;
+    --sc-ink: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #c6c8ca;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-section .status-card > h3 {
+    margin: 0 !important;
+    padding: 0.5rem 0.7rem 0.1rem !important;
+    background: var(--sc);
+    color: var(--sc-ink) !important;
+    font-size: 1.1rem !important;
+    line-height: 1.4;
+    justify-content: center;
+    text-align: center;
+}
+
+.markdown-section .status-card > h3::before { display: none !important; }
+.markdown-section .status-card > h3 .anchor,
+.markdown-section .status-card > h3 .anchor span {
+    color: var(--sc-ink) !important;
+}
+
+/* 副题里的 <em> 要跟着色带走。
+   全局 `.markdown-section em` 会把字染成 --ink-soft，
+   压在深色带上就成了一团糊 —— 这条必须写在副题规则之后。 */
+.markdown-section .sc-type em {
+    color: inherit;
+    font-style: italic;
+}
+
+/* 类型行（固定型 / 恶化型 / 易变型）接在抬头下面，同色连成一条 */
+.markdown-section .status-card > .sc-type {
+    margin: 0 !important;
+    padding: 0 0.7rem 0.45rem !important;
+    background: var(--sc);
+    color: var(--sc-ink);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-style: italic;
+    text-align: center;
+}
+
+/* 风味描述 */
+.markdown-section .status-card > .sc-flavor {
+    margin: 0 !important;
+    padding: 0.5rem 0.9rem !important;
+    background: #f0f1f1;
+    color: #4a4a4c;
+    font-size: 0.86rem;
+    font-style: italic;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.sc-block { margin: 0; }
+
+.sc-band {
+    padding: 0.2rem 0.9rem;
+    background: var(--sc);
+    color: var(--sc-ink);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.sc-body {
+    padding: 0.55rem 0.9rem 0.5rem;
+    background: #c6c8ca;
+}
+
+/* 原书第二条「解决方案 & 持续时间」的正文压深一档 */
+.sc-block + .sc-block .sc-body { background: #b1b3b5; }
+
+.markdown-section .sc-body > ul {
+    margin: 0 !important;
+    padding-left: 1rem !important;
+    list-style: none;
+}
+
+.markdown-section .sc-body > ul > li {
+    position: relative;
+    margin: 0 0 0.25rem !important;
+    font-size: 0.88rem;
+    line-height: 1.62;
+    color: #3f4042;
+}
+
+.markdown-section .sc-body > ul > li::before {
+    content: "";
+    position: absolute;
+    left: -0.72rem;
+    top: 0.62em;
+    width: 4px;
+    height: 4px;
+    border-radius: 1px;
+    background: color-mix(in srgb, var(--sc) 70%, #000);
+}
+
+.markdown-section .sc-body > p {
+    margin: 0 0 0.3rem !important;
+    font-size: 0.88rem;
+    line-height: 1.62;
+    color: #3f4042;
+}
+
+/* ---------- 34. 天气卡（原书 p.88–90） ----------
+   横幅抬头 + 风味副题 + 浅色描述条 + 灰色双栏条目。
+   色值：大晴天 #5acbf5、下雨 #6aa2bb、沙暴 #9d9273、下雪 #256290、
+   冰雹 #71c5ee、大日照 #f47c2e、大雨 #03242b、乱流 #5acbf5。 */
+.weather-card {
+    --wc: #5acbf5;
+    --wc-ink: #fff;
+    margin: 1.5rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #c6c8ca;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-section .weather-card > h3 {
+    margin: 0 !important;
+    padding: 0.62rem 0.9rem 0.12rem !important;
+    min-height: 3.2rem;
+    background: var(--wc);
+    color: var(--wc-ink) !important;
+    font-size: 1.16rem !important;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+
+.markdown-section .weather-card > h3::before { display: none !important; }
+.markdown-section .weather-card > h3 .anchor,
+.markdown-section .weather-card > h3 .anchor span {
+    color: var(--wc-ink) !important;
+}
+
+/* 左侧那枚天气图标：原书是圆形图标，我们这套 wx-* 是**圆角方块**，
+   再垫一块白圆牌就成了「方块压在圆上」。所以不垫底，直接摆上去，
+   方块自带的底色和色带同色系，接缝看不出来。 */
+.weather-card > h3 .wc-ico {
+    position: absolute;
+    left: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.2em;
+    height: 2.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.weather-card > h3 .wc-ico poke-icon {
+    width: 2.2em;
+    height: 2.2em;
+}
+
+.markdown-section .weather-card > .sc-type {
+    margin: 0 !important;
+    padding: 0 3.2rem 0.55rem !important;
+    background: var(--wc);
+    color: var(--wc-ink);
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-style: italic;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.markdown-section .weather-card > .wc-desc {
+    margin: 0 !important;
+    padding: 0.55rem 1rem !important;
+    background: #dbdcde;
+    color: #4a4a4c;
+    font-size: 0.86rem;
+    text-align: center;
+    line-height: 1.65;
+}
+
+.markdown-section .weather-card > ul {
+    margin: 0 !important;
+    padding: 0.7rem 1rem 0.7rem 1.4rem !important;
+    column-count: 2;
+    column-gap: 1.6rem;
+    background: #c6c8ca;
+    list-style: none;
+}
+
+.markdown-section .weather-card > ul > li {
+    position: relative;
+    break-inside: avoid;
+    margin: 0 0 0.4rem !important;
+    font-size: 0.88rem;
+    line-height: 1.62;
+    color: #3f4042;
+}
+
+.markdown-section .weather-card > ul > li::before {
+    content: "";
+    position: absolute;
+    left: -0.8rem;
+    top: 0.62em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--wc) 72%, #000);
+}
+
+/* ---------- 35. 环境挑战卡（原书 p.90–91） ----------
+   两列小卡：彩色抬头 + 一行副题 + 正文。 */
+.env-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+    margin: 1.3rem 0 1.6rem;
+    align-items: start;
+}
+
+.env-card {
+    --ec: #5a5a5a;
+    --ec-ink: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #dbdcde;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-section .env-card > h3 {
+    margin: 0 !important;
+    padding: 0.45rem 0.7rem 0.05rem !important;
+    background: var(--ec);
+    color: var(--ec-ink) !important;
+    font-size: 1.02rem !important;
+    justify-content: center;
+    text-align: center;
+}
+
+.markdown-section .env-card > h3::before { display: none !important; }
+.markdown-section .env-card > h3 .anchor,
+.markdown-section .env-card > h3 .anchor span {
+    color: var(--ec-ink) !important;
+}
+
+.markdown-section .env-card > .sc-type {
+    margin: 0 !important;
+    padding: 0 0.7rem 0.4rem !important;
+    background: var(--ec);
+    color: var(--ec-ink);
+    font-size: 0.76rem;
+    font-weight: 600;
+    font-style: italic;
+    text-align: center;
+}
+
+.markdown-section .env-card > p {
+    margin: 0 !important;
+    padding: 0.55rem 0.8rem 0.6rem !important;
+    font-size: 0.86rem;
+    line-height: 1.62;
+    color: #3f4042;
+}
+
+.markdown-section .env-card > p .field-chip {
+    font-size: 0.78em;
+    margin: 0.15em 0.2em 0.15em 0;
+}
+
+/* ---------- 36. 对战场地示意图（原书 p.56） ----------
+   一张俯视图：外框＝对战场地，左右两格＝训练家区域，
+   中间是主竞技区（正中一枚精灵球标）。下半张是己方／敌方半场。 */
+.field-map {
+    margin: 1.4rem 0;
+    padding: 0.9rem;
+    background: #dcdbd0;
+    border-radius: 10px;
+}
+
+.fm-frame {
+    display: grid;
+    grid-template-columns: 6em 1fr 6em;
+    gap: 0.4rem;
+    align-items: stretch;
+    border: 3px solid #b9b6a8;
+    border-radius: 8px;
+    padding: 0.5rem;
+    background: #cfcec3;
+}
+
+.fm-trainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: #8d8d84;
+    border-radius: 6px;
+    padding: 0.4rem 0.2rem;
+}
+
+.fm-arena {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 7.5em;
+    background: #e9e8dd;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6a6a62;
+    letter-spacing: 0.06em;
+}
+
+/* 场地正中的精灵球：原书那张图是球，不是圆点 */
+.fm-arena .fm-ball {
+    width: 2.4em !important;
+    height: 2.4em !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* 半场图是原书 p.56 那张绿／红球场，直接从 PDF 抠的矢量图 */
+.fm-field {
+    display: block;
+    width: min(100%, 430px) !important;
+    height: auto !important;
+    margin: 0.75rem auto 0 !important;
+    border-radius: 8px !important;
+}
+
+.field-map figcaption {
+    margin-top: 0.6rem;
+    font-size: 0.78rem;
+    color: #6f6f66;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    /* 相克表四列在手机上太挤：标签缩小、首列收窄 */
+    .markdown-section table.is-typechart td:first-child { width: 4.4em; }
+    .markdown-section table.is-typechart .type-chip {
+        font-size: 0.72em;
+        padding: 0.04em 0.34em;
+    }
+    .markdown-section table.is-typechart th,
+    .markdown-section table.is-typechart td { padding-left: 0.35em; padding-right: 0.35em; }
+
+    .fm-frame { grid-template-columns: 4.4em 1fr 4.4em; }
+    .fm-trainer { font-size: 0.62rem; }
+    .fm-arena { min-height: 6em; }
+}
+
+/* ---------- 37. 成功战斗十大要诀（原书 p.92） ----------
+   原书是一整块绿色面板，两栏编号条目。 */
+.tips-panel {
+    margin: 1.5rem 0;
+    padding: 1.1rem 1.2rem 0.9rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--ch) 84%, #000);
+    color: #fff;
+}
+
+.tips-panel > h2 {
+    margin: 0 0 0.9rem !important;
+    padding: 0 !important;
+    background: none !important;
+    color: #fff !important;
+    font-size: 1.15rem !important;
+    text-align: center;
+    border: 0 !important;
+}
+
+.tips-panel > h2::before { display: none !important; }
+.tips-panel > h2 .anchor,
+.tips-panel > h2 .anchor span { color: #fff !important; }
+
+.tips-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem 1.8rem;
+}
+
+.tips-list > div {
+    break-inside: avoid;
+    padding-bottom: 0.5rem;
+}
+
+.tips-list b {
+    display: block;
+    font-size: 0.94rem;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.tips-list p {
+    margin: 0.1rem 0 0 !important;
+    font-size: 0.86rem;
+    line-height: 1.62;
+    color: rgba(255, 255, 255, 0.94);
+}
+
+/* ---------- 38. 窄屏 ---------- */
+@media (max-width: 700px) {
+    .status-grid,
+    .env-grid,
+    .tips-list { grid-template-columns: 1fr; }
+
+    .markdown-section .weather-card > ul { column-count: 1; }
+
+    .markdown-section .weather-card > h3 { padding-left: 2.6rem !important; padding-right: 0.6rem !important; }
+    .weather-card > h3 .wc-ico { left: 0.3rem; width: 2em; height: 2em; }
+    .weather-card > h3 .wc-ico poke-icon { width: 1.7em; height: 1.7em; }
+    .markdown-section .weather-card > .sc-type { padding-left: 2.8rem !important; padding-right: 2.8rem !important; }
+}
+
+/* ---------- 39. 站内跳转卡 ----------
+   正文里「详情看另一页」的地方不再干说一句，给一张能点的卡。 */
+.markdown-section a.link-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 1.2rem 0;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    background: var(--paper-tint);
+    border: 1px solid var(--paper-line);
+    border-bottom: 1px solid var(--paper-line);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.markdown-section a.link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
+    border-color: var(--ch);
+    color: inherit;
+}
+
+.link-card .lc-ico {
+    flex: 0 0 auto;
+    font-size: 1.55rem;
+    line-height: 1;
+}
+
+.link-card .lc-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.link-card .lc-text b {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: var(--ch-deep);
+    line-height: 1.4;
+}
+
+.link-card .lc-text span {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+}
+
+.link-card .lc-go {
+    margin-left: auto;
+    flex: 0 0 auto;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--ch);
+}
+
+/* ---------- 40. 原书插图 ----------
+   从 PDF 抠出来的矢量插画。图自己带底色（原书那种灰面板），
+   所以只给圆角，不另加边框，免得两层边。 */
+.art-panel {
+    margin: 1.5rem 0;
+}
+
+.art-panel img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.art-panel figcaption {
+    margin-top: 0.55rem;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .link-card { gap: 0.6rem; padding: 0.65rem 0.8rem; }
+    .link-card .lc-ico { font-size: 1.3rem; }
+    .link-card .lc-text b { font-size: 0.92rem; }
+    .link-card .lc-text span { font-size: 0.75rem; }
+}
+
+/* ---------- 41. 结算时间轴（即时反应 / 延迟反应） ----------
+   原书 p.58 那张图：一个方块一个头像，方块下面写是谁的动作，
+   「结果」那两格没有底色、只把字染成对应角色的颜色。
+   最外层套一圈红框，表示这一整行都发生在伊布的回合里。 */
+.turn-timeline {
+    margin: 1.3rem 0;
+    padding: 0.9rem 1rem 0.7rem;
+    border-radius: 10px;
+    background: var(--paper-tint);
+    border: 1px solid var(--paper-line);
+}
+
+.tl-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+/* 一个「头像 + 文字块」单元 */
+.tl-item {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.tl-item img {
+    width: 2.1em;
+    height: auto;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.tl-item b {
+    padding: 0.34em 0.72em;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.tl-item.is-eevee b { background: #e8352e; }
+.tl-item.is-pika b  { background: #3fb3b3; }
+
+/* 「结果」格：不铺底色，只把字染成对应角色的颜色 */
+.tl-item.is-res b {
+    background: none;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+    font-weight: 800;
+}
+
+.tl-item.is-res.is-eevee b { color: #d0342c; }
+.tl-item.is-res.is-pika b  { color: #2f8f8f; }
+
+.tl-arrow {
+    flex: 0 0 auto;
+    padding-bottom: 0.5em;
+    color: #9a9a92;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* 红框：这一行都发生在伊布的回合里 */
+.tl-frame {
+    position: relative;
+    margin-top: 1.1rem;
+    padding: 1rem 0.7rem 0.6rem;
+    border: 2px solid #e8352e;
+    border-radius: 12px;
+}
+
+.tl-frame-label {
+    position: absolute;
+    top: -0.72em;
+    left: 0.9rem;
+    padding: 0 0.5em;
+    background: var(--paper-tint);
+    color: #d0342c;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.tl-note {
+    margin: 0.7rem 0 0 !important;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .tl-row { flex-direction: column; gap: 0.3rem; }
+    .tl-arrow { transform: rotate(90deg); padding: 0; }
+    .tl-item b { white-space: normal; }
+}
+
+
+/* ============================================================
+   对战指南（原书 p.54–55）的版面件
+   ------------------------------------------------------------
+   原书这两页是「左文右例」的双栏：左边讲，右边摆骰子、招式卡、
+   动作条。网页上改成「上面讲、下面摆一块例子面板」，读起来还是顺着走。
+   ============================================================ */
+
+/* 例子面板：一块浅灰底，装骰子 / 招式卡 / 动作条 */
+.step-panel {
+    margin: 1rem 0 1.4rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background: #e2e1d6;
+    border: 1px solid var(--paper-line);
+}
+
+.step-panel > :last-child { margin-bottom: 0 !important; }
+
+.step-panel .sp-title {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #7b7b72;
+}
+
+/* 对峙插图：原书 p.54 那张皮卡丘冲向伊布 */
+.step-panel .sp-duo {
+    display: block;
+    width: 100%;
+    max-width: 460px;
+    margin: 0.2rem auto 0 !important;
+    border-radius: 8px !important;
+}
+
+/* ---------- 掷骰卡（第一步） ---------- */
+.roll-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
+.roll-card {
+    padding: 0.5rem 0.7rem 0.55rem;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #cfcabb;
+    text-align: center;
+}
+
+.roll-card b {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6f6f66;
+}
+
+.roll-card .rc-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.roll-card .rc-line .die {
+    width: 1.9rem !important;
+    height: 1.9rem !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+}
+
+.roll-card .rc-line strong {
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--ch-deep);
+}
+
+/* ---------- 动作条（原书 p.54 的 Actions Used） ---------- */
+.act-tracker {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.3em 0.55em;
+    border-radius: 5px;
+    background: #7d7d74;
+    vertical-align: middle;
+    font-size: 0.8rem;
+}
+
+.act-tracker .at-label {
+    margin-right: 0.35em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.act-tracker i {
+    display: block;
+    width: 1em;
+    height: 1em;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.act-tracker i.on { background: #fff; }
+
+/* ---------- 招式卡（简化版） ---------- */
+.move-card {
+    max-width: 540px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #8f8f86;
+    color: #fff;
+}
+
+.move-card .mc-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.42rem 0.65rem;
+    background: #6f6f67;
+}
+
+.move-card .mc-head b {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.move-card .mc-pw {
+    display: flex;
+    align-items: center;
+    gap: 0.28rem;
+    margin-left: auto;
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #fff;
+}
+
+.move-card .mc-pw em {
+    font-style: normal;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.move-card .mc-body {
+    display: grid;
+    grid-template-columns: 4.2em 1fr;
+    gap: 0.18rem 0.5rem;
+    padding: 0.5rem 0.65rem 0.55rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.move-card .mc-body dt {
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.66);
+}
+
+.move-card .mc-body dd {
+    margin: 0;
+    color: #fff;
+}
+
+/* ---------- 单摆图标统一 2.6em ---------- */
+poke-icon.ico-solo {
+    width: 2.6em;
+    height: 2.6em;
+    margin: 0.2em 0;
+}
+
+icon-frame.ico-solo {
+    font-size: 0.8rem;   /* 3.25em × 0.8 = 2.6em */
+    margin: 0.2em 0.4em 0.2em 0;
+}
+
+@media (max-width: 640px) {
+    .roll-cards { grid-template-columns: 1fr; }
+}
+
+/* ---------- 42. 对战册补抠的三个图标 ----------
+   p.77 拷贝招式（星星眼小脸）、p.77 入场陷阱（捕兽夹）、p.78 力场护盾（橙色八角）。
+   都由 _dev/extract_battle_art.py 抠出，128 画布、内容 112px，和其他图标一套规格。 */
+poke-icon.mv.copy   { background-image: url(img/mv-copy.webp); }
+poke-icon.mv.hazard { background-image: url(img/mv-hazard.webp); }
+poke-icon.mv.field  { background-image: url(img/mv-field.webp); }
+
+/* 例子面板里的动作条一行、以及伤害公式一行 */
+.step-panel .at-row,
+.markdown-section p.at-row {
+    display: flex;
+    gap: 0.55rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0.55rem 0 0 !important;
+}
+
+.formula-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin: 0 !important;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.formula-line .fl-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+}
+
+.formula-line .fl-item b {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6f6f66;
+}
+
+.formula-line .fl-op {
+    font-weight: 800;
+    color: #9a9a92;
+}
+
+.formula-line .dice-pool { margin: 0 0.1rem; }
+
+/* 公式行里的威力徽章比正文小一号，免得把行撑得太高 */
+.formula-line icon-frame { font-size: 0.62rem; }
+
+/* ---------- 43. 冲抵 & 闪避：两张并排的绿卡（原书 p.70） ----------
+   原书把这两个战技做成左右两张绿底卡片：抬头、灰色战技卡、白字正文、
+   对决插图、掷骰公式、成功后的条目。绿底 #6dc49a 是量的。 */
+.maneuver-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    align-items: start;
+}
+
+.maneuver-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #6dc49a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-section .maneuver-card > h3 {
+    margin: 0 !important;
+    padding: 0.7rem 1rem 0.55rem !important;
+    background: #6dc49a;
+    color: #fff !important;
+    font-size: 1.2rem !important;
+    justify-content: center;
+    text-align: center;
+}
+
+.markdown-section .maneuver-card > h3::before { display: none !important; }
+.markdown-section .maneuver-card > h3 .anchor,
+.markdown-section .maneuver-card > h3 .anchor span { color: #fff !important; }
+
+/* 卡片里的正文一律白字 */
+.markdown-section .maneuver-card p,
+.markdown-section .maneuver-card li {
+    color: #fff;
+}
+
+.markdown-section .maneuver-card p {
+    margin: 0 1rem 0.6rem !important;
+    font-size: 0.86rem;
+    line-height: 1.65;
+}
+
+.markdown-section .maneuver-card ul {
+    margin: 0 1rem 0.7rem !important;
+    padding-left: 1.15rem !important;
+}
+
+.markdown-section .maneuver-card li {
+    margin-bottom: 0.2rem;
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.markdown-section .maneuver-card li::marker { color: rgba(255, 255, 255, 0.7); }
+
+.markdown-section .maneuver-card strong { color: #fff; }
+
+.markdown-section .maneuver-card em {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+/* 卡片里的灰色战技卡 */
+.maneuver-card .mn-move {
+    margin: 0 1rem 0.8rem;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #d1d2d4;
+    color: #3a3a3c;
+}
+
+.mn-move .mn-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    background: #b9babd;
+    color: #2f3033;
+    font-weight: 800;
+    font-size: 0.92rem;
+}
+
+.mn-move .mn-head span {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #5c5d60;
+}
+
+.mn-move dl {
+    display: grid;
+    grid-template-columns: 4em 1fr;
+    gap: 0.1rem 0.45rem;
+    margin: 0;
+    padding: 0.45rem 0.6rem 0.5rem;
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.mn-move dt { color: #6b6c6f; font-weight: 700; }
+.mn-move dd { margin: 0; color: #3a3a3c; }
+
+/* 对决插图 */
+.maneuver-card .mn-art {
+    margin: 0 1rem 0.7rem !important;
+}
+
+.maneuver-card .mn-art img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 !important;
+    border-radius: 6px;
+}
+
+/* 公式行在绿卡里要白字 */
+.markdown-section .maneuver-card .formula-line {
+    justify-content: flex-start;
+    margin: 0 1rem 0.6rem !important;
+    color: #fff;
+}
+
+.markdown-section .maneuver-card .formula-line .fl-item b { color: #fff; }
+
+.markdown-section .maneuver-card .formula-line .fl-op {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+}
+
+@media (max-width: 760px) {
+    .maneuver-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- 44. 热风四连：四只宝可梦各做各的（原书 p.71） ---------- */
+.hw-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.8rem;
+    margin: 1.2rem 0 1.4rem;
+}
+
+.hw-tile {
+    padding: 0.6rem 0.7rem 0.7rem;
+    border-radius: 10px;
+    background: var(--paper-tint);
+    border: 1px solid var(--paper-line);
+    text-align: center;
+}
+
+.hw-tile img {
+    display: block;
+    width: 100%;
+    max-width: 120px;
+    height: 88px;
+    object-fit: contain;
+    margin: 0 auto 0.35rem !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.hw-tile b {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--ch-deep);
+}
+
+.hw-tile p {
+    margin: 0 !important;
+    font-size: 0.76rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    text-align: left;
+}
+
+@media (max-width: 760px) {
+    .hw-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 460px) {
+    .hw-grid { grid-template-columns: 1fr; }
+    .hw-tile img { height: 76px; }
+}
+
+/* ---------- 45. 命中修正演算（原书 p.77 打雷与烟幕） ----------
+   原书是一行「骰池 with 命中↓2 = −2 成功」，每格下面带小注。 */
+.acc-demo {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin: 1rem 0;
+    padding: 0.8rem 0.6rem;
+    border-radius: 10px;
+    background: #e2e1d6;
+    border: 1px solid var(--paper-line);
+}
+
+.acc-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.acc-item em {
+    font-style: normal;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6f6f66;
+    white-space: nowrap;
+}
+
+.acc-with,
+.acc-eq {
+    padding-bottom: 1.3em;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #8a8a80;
+}
+
+.acc-res {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 6px;
+    background: #d9534f;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+/* ---------- 46. 招式卡右侧的图标列（原书 p.78 青草场地 / 光合作用） ---------- */
+.move-card .mc-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+}
+
+.move-card .mc-main .mc-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.move-card .mc-badges {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 4px;
+    align-content: start;
+    justify-items: center;
+    padding: 0.45rem 0.5rem 0.45rem 0;
+}
+
+.move-card .mc-badges poke-icon {
+    width: 1.9em;
+    height: 1.9em;
+}
+
+.move-card .mc-badges icon-frame {
+    font-size: 0.6rem;
 }

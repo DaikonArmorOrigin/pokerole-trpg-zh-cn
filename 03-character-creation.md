@@ -1,4 +1,4 @@
-# 角色创建
+# <img class="title-icon" src="assets/img/ball-ultra.webp" width="27" height="27" alt="">角色创建
 
 ## 创建一名角色
 
@@ -93,16 +93,16 @@
 
 若想选择其他等级，可参照以下简易指南：
 
-|等级|基础能力|社交|技能点|技能上限|
+|等级|基础能力|社交|技能点|技能极限|
 |:---:|:---:|:---:|:---:|:---:|
-| 入门 Starter | 0 | 0 | 5 | 1 |
-| 新手* Rookie | 2 | 2 | 10 | 2 |
-| 正式 Standard | 4 | 4 | 14 | 3 |
-| 资深 Advanced | 6 | 6 | 17 | 4 |
-| 专家 Expert | 8 | 8 | 19 | 5 |
-| 精英 Ace | 10 | 10 | 20 | 5 |
-| 大师 Master | 10 | 10 | 22 | 5 |
-| 冠军 Champion | 14 | 14 | 25 | 5 |
+| <img class="rank-icon" src="assets/img/ch-00-intro.webp" alt="">入门 Starter | 0 | 0 | 5 | 1 |
+| <img class="rank-icon" src="assets/img/ball-poke.webp" alt="">新手* Rookie | 2 | 2 | 10 | 2 |
+| <img class="rank-icon" src="assets/img/ball-great.webp" alt="">正式 Standard | 4 | 4 | 14 | 3 |
+| <img class="rank-icon" src="assets/img/ball-ultra.webp" alt="">资深 Advanced | 6 | 6 | 17 | 4 |
+| <img class="rank-icon" src="assets/img/ball-dusk.webp" alt="">专家 Expert | 8 | 8 | 19 | 5 |
+| <img class="rank-icon" src="assets/img/ball-cherish.webp" alt="">精英 Ace | 10 | 10 | 20 | 5 |
+| <img class="rank-icon" src="assets/img/ball-master.webp" alt="">大师 Master | 10 | 10 | 22 | 5 |
+| <img class="rank-icon" src="assets/img/ch-12-spirit.webp" alt="">冠军 Champion | 14 | 14 | 25 | 5 |
 
 *适用于新游戏的基础等级。
 
@@ -114,7 +114,7 @@
 
 > [!tip] 等级能给你什么？
 >
-> 各等级对应的奖励（基础能力点、社交能力点、技能点、技能上限、对战最大目标数）详见<a href="#/02-system-explained?id=等级">“等级”</a> 章节。
+> 各等级对应的奖励（基础能力点、社交能力点、技能点、技能极限、对战最大目标数）详见<a href="#/02-system-explained?id=等级">“等级”</a> 章节。
 
 ## 训练家角色卡
 
@@ -192,7 +192,7 @@
 
 若不确定选择哪只宝可梦，可查阅本书图鉴部分，在条目中寻找“最初的伙伴”图标：
 
-<span class="beginner-ball"></span>
+<img class="ball-icon" src="assets/img/icon-starter.webp" alt="最初的伙伴" width="18" height="18">
 
 请慎重考虑，因为所选的宝可梦很可能要陪伴你完成整个冒险之旅。
 
@@ -525,7 +525,7 @@
 
 > [!rule] 意志值是演绎性格的奖励
 >
-> 如果想要恢复 1 点或 2 点意志值，做出符合自身角色性格的行为就是个好方法。<br>
+> 如果想要恢复1点或2点意志值，做出符合自身角色性格的行为就是个好方法。<br>
 > 叙事者应奖励那些在游戏中始终符合角色性格行动的玩家。
 
 > [!gm] 🎭 叙事者笔记

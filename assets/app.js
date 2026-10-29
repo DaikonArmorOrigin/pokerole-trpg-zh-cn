@@ -9,8 +9,10 @@
  *   4  面包屑 + 上一节 / 下一节
  *   5  页内目录（右侧 TOC）+ 锚点定位
  *   6  属性克制提示框
+ *  6.5 属性组合相克计算（typechart 页）
+ *  6.6 队伍弱点补盲图（typechart 页）
  *   7  全屏搜索（图鉴按钮唤起）
- *   8  快速掷骰（快速参考页）
+ *   8  快速掷骰 + 掷骰记录（快速参考页）
  *   9  「跳到正文」
  *  10  外壳元素（面包屑 / 页脚）
  *  11  docsify 配置
@@ -104,6 +106,8 @@
     var CALLOUT_ALIAS = {
         tip: 'tip', '提示': 'tip', '贴士': 'tip',
         rule: 'rule', '规则': 'rule',
+        // 「注意 / 警告」沿用规则卡：暖米黄底 + 深褐标签，语义上就是「这条别搞错」
+        warning: 'rule', '警告': 'rule', '注意': 'rule',
         gm: 'gm', '叙事': 'gm', '叙事者': 'gm',
         trainer: 'trainer', '训练家': 'trainer',
         note: 'note', '译注': 'note',
@@ -152,8 +156,10 @@
                 var hint = document.createElement('span');
                 hint.className = 'hint';
                 hint.textContent = title || '译注';
+                // 「译注」两个字已经写在徽章里了，后面再跟一个「译注」是重复的
+                if (hint.textContent.trim() === '译注') hint.textContent = '';
                 summary.appendChild(badge);
-                summary.appendChild(hint);
+                if (hint.textContent) summary.appendChild(hint);
                 details.appendChild(summary);
 
                 target = document.createElement('div');
@@ -193,7 +199,21 @@
                 if (labelText) {
                     var label = document.createElement('div');
                     label.className = cfg.title;
-                    label.textContent = labelText;
+                    // 「💡 训练家贴士」拆成两段：emoji 单独一个 span，
+                    // 圆标里才能让图标占一行、中文占下面两行（原书就这么排）。
+                    var mm = labelText.match(/^([^\s\u4e00-\u9fa5]+)\s+(.+)$/);
+                    if (mm) {
+                        var ico = document.createElement('span');
+                        ico.className = 'ico';
+                        ico.textContent = mm[1];
+                        label.appendChild(ico);
+                        var txt = document.createElement('span');
+                        txt.className = 'txt';
+                        txt.textContent = mm[2];
+                        label.appendChild(txt);
+                    } else {
+                        label.textContent = labelText;
+                    }
                     box.appendChild(label);
                 }
 
@@ -280,9 +300,13 @@
             return !a.closest('.app-sub-sidebar');
         }).map(function (a) {
             var group = getGroupLabel(a);
+            // 章节图标现在是一张位图（原书目录的球），不是 emoji，
+            // 所以单独把 src 带出来，面包屑才能复用同一枚图标。
+            var img = a.querySelector('img');
             return {
                 href: normalizePath(a.getAttribute('href')),
                 text: a.textContent.trim(),
+                iconSrc: img ? (img.getAttribute('src') || '') : '',
                 group: group,
                 quickRef: /快速参考/.test(group),
                 element: a
@@ -365,9 +389,12 @@
 
         var group = splitLabel(link.group);
         var page = splitLabel(link.text);
-        var icon = group.icon || page.icon || '📄';
+        // 章节图标优先用侧栏那张位图，没有才退回 emoji
+        var iconHTML = link.iconSrc
+            ? '<img class="bc-ball" src="' + link.iconSrc + '" alt="" aria-hidden="true">'
+            : '<span class="bc-icon" aria-hidden="true">' + (group.icon || page.icon || '📄') + '</span>';
 
-        var html = '<span class="bc-icon" aria-hidden="true">' + icon + '</span>';
+        var html = iconHTML;
 
         // 组名和页名相同（如"引言 / 引言"）时只显示一层，但图标仍保留
         if (group.name && normLabel(group.name) !== normLabel(page.name)) {
@@ -728,21 +755,34 @@
         }).join('');
     }
 
+    // 标签后面跟一个淡淡的倍率，省得「克制」和「抗性」看串
+    function ttLabel(text, mult) {
+        return '<span class="tt-label">' + text + '<b>' + mult + '</b></span>';
+    }
+
+    // 上「进攻」下「防守」分开写：火既克制钢、又抗钢，
+    // 混在一起列读者会以为是同一件事
+    function typeTooltipHtml(key) {
+        var d = window.POKE_TYPES[key];
+        return '<div class="tt-title">⚔️ ' + d.zh + '</div>' +
+            '<div class="tt-sec">进攻 · 打别人</div>' +
+            '<div class="tt-row tt-strong">' + ttLabel('克制', '×2') +
+                '<div class="tt-tags">' + tags(d.strong) + '</div></div>' +
+            '<div class="tt-sec tt-sec-def">防守 · 被打</div>' +
+            '<div class="tt-row tt-weak">' + ttLabel('弱点', '×2') +
+                '<div class="tt-tags">' + tags(d.weak) + '</div></div>' +
+            '<div class="tt-row tt-resist">' + ttLabel('抗性', '×1/2') +
+                '<div class="tt-tags">' + tags(d.resist) + '</div></div>' +
+            '<div class="tt-row tt-immunity">' + ttLabel('免疫', '×0') +
+                '<div class="tt-tags">' + tags(d.immunity, ' immunity') + '</div></div>';
+    }
+
     function showTooltip(item) {
         var key = typeKeyOf(item);
         if (!key) return hideTooltip();
 
-        var data = window.POKE_TYPES[key];
         var tip = ensureTooltip();
-
-        tip.innerHTML =
-            '<div class="tt-title">⚔️ ' + data.zh + '</div>' +
-            '<div class="tt-row tt-strong"><span class="tt-label">🟢 克制</span>' +
-                '<div class="tt-tags">' + tags(data.strong) + '</div></div>' +
-            '<div class="tt-row tt-weak"><span class="tt-label">🔴 弱点</span>' +
-                '<div class="tt-tags">' + tags(data.weak) + '</div></div>' +
-            '<div class="tt-row tt-immunity"><span class="tt-label">⚪ 免疫</span>' +
-                '<div class="tt-tags">' + tags(data.immunity, ' immunity') + '</div></div>';
+        tip.innerHTML = typeTooltipHtml(key);
 
         tip.classList.add('visible');
         activeItem = item;
@@ -760,6 +800,21 @@
 
         tip.style.left = left + 'px';
         tip.style.top = top + 'px';
+
+        // 刚塞进 DOM 时宽度还没定稿（标签换行、字体加载都会改它），
+        // 于是「右边界留 8px」可能算少，手机上会贴着屏幕边。下一帧再校一次。
+        requestAnimationFrame(function () {
+            if (activeItem !== item) return;
+            var w = tip.offsetWidth;
+            var h = tip.offsetHeight;
+            var l = left;
+            var t = top;
+            if (l + w > window.innerWidth - 8) l = window.innerWidth - w - 8;
+            if (l < 8) l = 8;
+            if (t + h > window.innerHeight - 8) t = Math.max(8, rect.top - h - 12);
+            tip.style.left = l + 'px';
+            tip.style.top = t + 'px';
+        });
     }
 
     function hideTooltip() {
@@ -834,6 +889,359 @@
             var zh = el.querySelector('.zh');
             el.setAttribute('aria-label', (zh ? zh.textContent.trim() : '') + '属性，查看克制关系');
         });
+    }
+
+    /* ==========================================================
+     * 6.5 属性组合相克计算（typechart 页的 #typeDual）
+     * ----------------------------------------------------------
+     * 算的是「防御向」：对每一种进攻属性，把每个防守属性的倍率相乘。
+     *   · 只要有一个防守属性免疫，结果直接 0，其它不用再看
+     *   · 否则 2×2=4、2×0.5=1（中性，不列出）、0.5×0.5=0.25
+     * 默认两格；打开「第三属性」开关才是三格——森林咒术（追加草）、
+     * 万圣夜（追加幽灵）这类效果才会让宝可梦变成三属性。
+     * 固定行输出，空的一行写「无」，切换属性时版面才不会上下跳；
+     * 8× / 1/8× 只有三属性才可能出现，所以只在开关打开时出现。
+     * ========================================================== */
+    var DUAL_GROUPS = [
+        { m: 8,     cls: 'is-x8',      mult: '8×',   name: '弱点', only3: true },
+        { m: 4,     cls: 'is-x4',      mult: '4×',   name: '弱点' },
+        { m: 2,     cls: 'is-x2',      mult: '2×',   name: '弱点' },
+        { m: 0.5,   cls: 'is-half',    mult: '1/2×', name: '抗性' },
+        { m: 0.25,  cls: 'is-quarter', mult: '1/4×', name: '抗性' },
+        { m: 0.125, cls: 'is-eighth',  mult: '1/8×', name: '抗性', only3: true },
+        { m: 0,     cls: 'is-zero',    mult: '0×',   name: '免疫' }
+    ];
+
+    var SLOT_HINT = ['属性一', '属性二', '属性三'];
+    var SLOT_ARIA = ['第一个属性：', '第二个属性：', '第三个属性：'];
+
+    function dualMultiplier(atkKey, defKeys, types) {
+        var atkZh = types[atkKey].zh;
+        var m = 1;
+        for (var i = 0; i < defKeys.length; i++) {
+            var def = types[defKeys[i]];
+            if (!def) continue;
+            if ((def.immunity || []).indexOf(atkZh) >= 0) return 0;
+            if ((def.weak || []).indexOf(atkZh) >= 0) m *= 2;
+            else if ((def.resist || []).indexOf(atkZh) >= 0) m *= 0.5;
+        }
+        return m;
+    }
+
+    function initTypeDual() {
+        var box = $('#typeDual');
+        if (!box || box.dataset.ready) return;
+        box.dataset.ready = '1';
+
+        var types = window.POKE_TYPES || {};
+        if (!Object.keys(types).length) return;
+
+        var slotEls = $$('.td-slot', box);
+        var chipEls = $$('.td-chip', box);
+        var resultEl = $('#tdResult', box);
+        var swapEl = $('#tdSwap', box);
+        var resetEl = $('#tdReset', box);
+        var thirdEl = $('#tdThird', box);
+        if (slotEls.length < 3 || !resultEl) return;
+
+        var slots = [null, null, null];
+        var thirdOn = false;
+        var active = 0;              // 高亮的槽：填满后再点属性就替换它
+
+        function nameOf(key) { return types[key] ? types[key].zh : ''; }
+        function slotCount() { return thirdOn ? 3 : 2; }
+
+        function renderSlots() {
+            var n = slotCount();
+            slotEls.forEach(function (el, i) {
+                var key = slots[i];
+                var off = i >= n;
+                el.disabled = off;
+                el.className = 'td-slot' +
+                    (key ? ' type-' + key + ' is-filled' : '') +
+                    (i === active && !off ? ' is-active' : '') +
+                    (off ? ' is-off' : '');
+                el.innerHTML = key
+                    ? '<span class="td-slot-name">' + nameOf(key) + '</span>' +
+                      '<span class="td-slot-x" aria-hidden="true">×</span>'
+                    : '<span class="td-slot-hint">' + SLOT_HINT[i] + '</span>';
+                el.setAttribute('aria-label', SLOT_ARIA[i] +
+                    (off ? '未开启' : (key ? nameOf(key) + '，点击清除' : '未选择')));
+            });
+
+            if (swapEl) swapEl.disabled = !(slots[0] && slots[1]);
+            if (resetEl) resetEl.disabled = !slots[0] && !slots[1] && !slots[2];
+
+            chipEls.forEach(function (c) {
+                var on = slots.slice(0, n).indexOf(c.getAttribute('data-type')) >= 0;
+                c.classList[on ? 'add' : 'remove']('is-on');
+                c.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+        }
+
+        function renderResult() {
+            var n = slotCount();
+            var picked = slots.slice(0, n).filter(Boolean);
+            if (!picked.length) {
+                resultEl.innerHTML = '<p class="td-idle">' +
+                    (thirdOn ? '第三属性已打开，点属性依次填三个槽。'
+                             : '还没选属性。先点一个（选两个就是双属性）。') +
+                    '</p>';
+                return;
+            }
+
+            // 8× / 1/8× 只有真的凑齐三个属性才可能出现，按 picked 判断而不是按开关状态
+            var buckets = DUAL_GROUPS
+                .filter(function (g) { return !g.only3 || picked.length === 3; })
+                .map(function (g) { return { g: g, list: [] }; });
+
+            Object.keys(types).forEach(function (atkKey) {
+                var m = dualMultiplier(atkKey, picked, types);
+                for (var i = 0; i < buckets.length; i++) {
+                    if (buckets[i].g.m === m) { buckets[i].list.push(atkKey); return; }
+                }
+            });
+
+            var countText = picked.length === 1 ? '单属性'
+                : picked.length === 2 ? '双属性' : '三属性';
+
+            resultEl.innerHTML =
+                '<div class="td-head">' +
+                    picked.map(function (k) {
+                        return '<span class="td-pill type-' + k + '">' + nameOf(k) + '</span>';
+                    }).join('<span class="td-plus">＋</span>') +
+                    '<span class="td-head-note">' + countText + '</span>' +
+                '</div>' +
+                buckets.map(function (b) {
+                    var chips = b.list.length
+                        ? b.list.map(function (k) {
+                            return '<span class="td-res-chip type-' + k + '">' + nameOf(k) + '</span>';
+                        }).join('')
+                        : '<span class="td-none">无</span>';
+                    return '<div class="td-row ' + b.g.cls + '">' +
+                        '<span class="td-mult"><b>' + b.g.mult + '</b>' + b.g.name + '</span>' +
+                        '<span class="td-list">' + chips + '</span>' +
+                    '</div>';
+                }).join('');
+        }
+
+        function pick(key) {
+            if (!types[key]) return;
+            var n = slotCount();
+
+            var dup = slots.indexOf(key);
+            if (dup >= 0 && dup < n) {          // 已经选过 → 取消
+                slots[dup] = null;
+                active = dup;
+            } else {
+                var i = -1;
+                for (var j = 0; j < n; j++) { if (!slots[j]) { i = j; break; } }
+                if (i < 0) i = active < n ? active : 0;   // 满了 → 替换高亮那个
+                slots[i] = key;
+                active = (i + 1) % n;           // 光标挪到下一格，方便连点
+            }
+            renderSlots();
+            renderResult();
+        }
+
+        if (thirdEl) {
+            thirdEl.addEventListener('change', function () {
+                thirdOn = thirdEl.checked;
+                if (thirdOn) {
+                    active = 2;                 // 开了就直接等第三个属性
+                } else {
+                    slots[2] = null;            // 关掉就把第三格清空
+                    if (active === 2) active = 0;
+                }
+                renderSlots();
+                renderResult();
+            });
+        }
+
+        box.addEventListener('click', function (e) {
+            var chip = e.target.closest('.td-chip');
+            if (chip) { pick(chip.getAttribute('data-type')); return; }
+
+            var slot = e.target.closest('.td-slot');
+            if (slot) {
+                var i = +slot.getAttribute('data-slot');
+                if (i >= slotCount()) return;    // 第三格没开时点不到（button 已 disabled）
+                if (slots[i]) slots[i] = null;   // 点已填的槽 = 清掉它
+                active = i;
+                renderSlots();
+                renderResult();
+                return;
+            }
+
+            if (e.target.closest('#tdSwap')) {
+                var t = slots[0]; slots[0] = slots[1]; slots[1] = t;
+                renderSlots();
+                renderResult();
+                return;
+            }
+
+            if (e.target.closest('#tdReset')) {
+                slots = [null, null, null];
+                active = 0;
+                renderSlots();
+                renderResult();
+            }
+        });
+
+        renderSlots();
+        renderResult();
+    }
+
+    /* ==========================================================
+     * 6.6 队伍弱点补盲图（typechart 页的 #teamChart）
+     * ----------------------------------------------------------
+     * 最多 6 只，每只 1～2 个属性。按 18 种「进攻属性」统计队里
+     * 有几只吃 ×2 / ×4：条子越长洞越大，深红那一段是 ×4 的。
+     * 一只都不怕的属性单独列在最后——那才是已经补上的盲区。
+     * ========================================================== */
+    var TEAM_MAX = 6;
+    var TEAM_ORDER = ['normal', 'bug', 'dark', 'dragon', 'electric', 'fairy',
+        'fight', 'fire', 'flying', 'ghost', 'grass', 'ground', 'ice',
+        'poison', 'psychic', 'rock', 'steel', 'water'];
+    var CIRCLED = ['①', '②', '③', '④', '⑤', '⑥'];
+
+    function initTeamChart() {
+        var box = $('#teamChart');
+        if (!box || box.dataset.ready) return;
+        box.dataset.ready = '1';
+
+        var types = window.POKE_TYPES || {};
+        if (!Object.keys(types).length) return;
+
+        var listEl = $('#tmList', box);
+        var addEl = $('#tmAdd', box);
+        var resultEl = $('#tmResult', box);
+        if (!listEl || !resultEl) return;
+
+        var team = [{ a: '', b: '' }];
+
+        function optionsFor(cur) {
+            return TEAM_ORDER.map(function (k) {
+                return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' +
+                    types[k].zh + '</option>';
+            }).join('');
+        }
+
+        function selectHtml(i, slot, cur) {
+            return '<select class="tm-type' + (cur ? ' is-set type-' + cur : '') + '"' +
+                ' data-i="' + i + '" data-slot="' + slot + '"' +
+                ' aria-label="第 ' + (i + 1) + ' 只的' + (slot === 0 ? '第一' : '第二') + '属性">' +
+                '<option value="">' + (slot === 0 ? '选属性' : '（单属性）') + '</option>' +
+                optionsFor(cur) +
+            '</select>';
+        }
+
+        function renderRows() {
+            listEl.innerHTML = team.map(function (m, i) {
+                return '<div class="tm-row">' +
+                    '<span class="tm-no">' + (i + 1) + '</span>' +
+                    selectHtml(i, 0, m.a) +
+                    selectHtml(i, 1, m.b) +
+                    '<button class="tm-del" type="button" data-i="' + i + '"' +
+                        ' aria-label="删掉第 ' + (i + 1) + ' 只">✕</button>' +
+                '</div>';
+            }).join('');
+
+            if (addEl) {
+                addEl.disabled = team.length >= TEAM_MAX;
+                addEl.textContent = team.length >= TEAM_MAX
+                    ? '最多 ' + TEAM_MAX + ' 只'
+                    : '＋ 添加一只';
+            }
+        }
+
+        function update() {
+            var members = [];
+            team.forEach(function (m, i) {
+                if (m.a || m.b) members.push({ a: m.a, b: m.b, i: i });
+            });
+            var total = members.length;
+
+            if (!total) {
+                resultEl.innerHTML = '<p class="td-idle">先给一只宝可梦选属性。</p>';
+                return;
+            }
+
+            var rows = TEAM_ORDER.map(function (atk) {
+                var w2 = 0, w4 = 0, hits = [];
+                members.forEach(function (m) {
+                    var mult = dualMultiplier(atk, [m.a, m.b].filter(Boolean), types);
+                    if (mult >= 4) { w4++; hits.push(m.i); }
+                    else if (mult === 2) { w2++; hits.push(m.i); }
+                });
+                return { atk: atk, w2: w2, w4: w4, weak: w2 + w4, hits: hits };
+            });
+
+            // 4× 的比 2× 严重，排序时算双份
+            var holes = rows.filter(function (r) { return r.weak > 0; })
+                .sort(function (a, b) { return (b.w4 * 2 + b.w2) - (a.w4 * 2 + a.w2); });
+            var safe = rows.filter(function (r) { return r.weak === 0; });
+
+            var worst = holes.slice(0, 2).map(function (r) {
+                return types[r.atk].zh + ' ' + r.weak + ' 只';
+            }).join('、');
+
+            resultEl.innerHTML =
+                '<div class="tm-sum">' +
+                    '<span>共 <b>' + total + '</b> 只</span>' +
+                    (worst ? '<span>最怕 <b>' + worst + '</b></span>' : '') +
+                '</div>' +
+                holes.map(function (r) {
+                    return '<div class="tm-bar-row">' +
+                        '<span class="tm-chip type-' + r.atk + '">' + types[r.atk].zh + '</span>' +
+                        '<span class="tm-bar">' +
+                            '<i class="tm-seg is-w4" style="width:' + (r.w4 / total * 100) + '%"></i>' +
+                            '<i class="tm-seg is-w2" style="width:' + (r.w2 / total * 100) + '%"></i>' +
+                        '</span>' +
+                        '<span class="tm-count">' + r.weak + '<small>/' + total + '</small></span>' +
+                        '<span class="tm-hits">' +
+                            r.hits.map(function (i) { return CIRCLED[i]; }).join('') +
+                        '</span>' +
+                    '</div>';
+                }).join('') +
+                (safe.length
+                    ? '<div class="tm-safe">全队都不怕：' + safe.map(function (r) {
+                        return '<span class="tm-chip type-' + r.atk + '">' + types[r.atk].zh + '</span>';
+                    }).join('') + '</div>'
+                    : '');
+        }
+
+        listEl.addEventListener('change', function (e) {
+            var sel = e.target.closest('.tm-type');
+            if (!sel) return;
+            var i = +sel.getAttribute('data-i');
+            if (!team[i]) return;
+            if (+sel.getAttribute('data-slot') === 0) team[i].a = sel.value;
+            else team[i].b = sel.value;
+            sel.className = 'tm-type' + (sel.value ? ' is-set type-' + sel.value : '');
+            update();
+        });
+
+        listEl.addEventListener('click', function (e) {
+            var del = e.target.closest('.tm-del');
+            if (!del) return;
+            team.splice(+del.getAttribute('data-i'), 1);
+            if (!team.length) team.push({ a: '', b: '' });   // 至少留一行
+            renderRows();
+            update();
+        });
+
+        if (addEl) {
+            addEl.addEventListener('click', function () {
+                if (team.length >= TEAM_MAX) return;
+                team.push({ a: '', b: '' });
+                renderRows();
+                update();
+            });
+        }
+
+        renderRows();
+        update();
     }
 
     /* ==========================================================
@@ -1279,7 +1687,43 @@
 
     /* ==========================================================
      * 8. 快速掷骰（快速参考页里的 #diceRoller）
+     * ----------------------------------------------------------
+     * 每掷一次除了显示，还会往 localStorage 记一条：
+     *   { t: 时间戳, n: 骰池大小, d: [每颗点数], s: 成功数 }
+     * 只存这台设备，不上传；最多留 DICE_LOG_MAX 条，新的在最前面。
+     * 隐私模式 / 配额满时写入会失败，这里直接吞掉，掷骰本身照常。
      * ========================================================== */
+    var DICE_LOG_KEY = 'poketrpg.dicelog.v1';
+    var DICE_LOG_MAX = 100;
+
+    function diceLogRead() {
+        try {
+            var arr = JSON.parse(localStorage.getItem(DICE_LOG_KEY) || '[]');
+            return Array.isArray(arr) ? arr : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function diceLogWrite(rows) {
+        try {
+            localStorage.setItem(DICE_LOG_KEY, JSON.stringify(rows.slice(0, DICE_LOG_MAX)));
+        } catch (e) { /* 存不进去就算了 */ }
+    }
+
+    function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+    // 当天的记录只显示时分秒，往前翻的带上「几月几日」
+    function fmtRollTime(ts) {
+        var d = new Date(ts);
+        var now = new Date();
+        var hm = pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+        var sameDay = d.getFullYear() === now.getFullYear() &&
+                      d.getMonth() === now.getMonth() &&
+                      d.getDate() === now.getDate();
+        return sameDay ? hm : (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + hm;
+    }
+
     function initDiceRoller() {
         var box = $('#diceRoller');
         if (!box || box.dataset.ready) return;
@@ -1289,10 +1733,73 @@
         var output = box.querySelector('#drOutput');
         if (!input || !output) return;
 
+        var logBox = box.querySelector('#drLog');
+        var logList = box.querySelector('#drLogList');
+        var logMeta = box.querySelector('#drLogMeta');
+        var logClear = box.querySelector('#drLogClear');
+        var clearTimer = null;
+
         function clamp(v) {
             v = parseInt(v, 10);
             if (isNaN(v)) v = 1;
             return Math.max(1, Math.min(30, v));
+        }
+
+        function resetClearBtn() {
+            if (clearTimer) { clearTimeout(clearTimer); clearTimer = null; }
+            if (logClear) {
+                logClear.textContent = '清空';
+                logClear.classList.remove('is-armed');
+            }
+        }
+
+        // 整块从 localStorage 重画。docsify 每次翻页都会重建正文，
+        // 所以「恢复历史」和「刷新列表」是同一件事。
+        function renderLog() {
+            if (!logBox || !logList) return;
+            resetClearBtn();
+
+            var rows = diceLogRead();
+            if (!rows.length) {
+                logBox.hidden = true;
+                logList.innerHTML = '';
+                if (logMeta) logMeta.textContent = '';
+                return;
+            }
+
+            logBox.hidden = false;
+            if (logMeta) {
+                logMeta.textContent = (rows.length >= DICE_LOG_MAX
+                    ? '最近 ' + DICE_LOG_MAX + ' 次'
+                    : '共 ' + rows.length + ' 次') + ' · 只存本机';
+            }
+
+            logList.innerHTML = rows.map(function (r, i) {
+                var dice = (r.d || []).map(function (v) {
+                    return '<span class="dr-log-die' + (v >= 4 ? ' is-success' : '') + '">' + v + '</span>';
+                }).join('');
+                return '<li class="dr-log-row">' +
+                    '<span class="dr-log-time">' + fmtRollTime(r.t) + '</span>' +
+                    '<span class="dr-log-dice">' + dice + '</span>' +
+                    '<span class="dr-log-res"><b>' + r.s + '</b><span>／' + r.n + '</span></span>' +
+                    '<button class="dr-log-del" type="button" data-i="' + i + '"' +
+                        ' title="删掉这条" aria-label="删掉这条记录">×</button>' +
+                    '</li>';
+            }).join('');
+        }
+
+        function renderResult(rec) {
+            output.innerHTML =
+                '<div class="dr-dice">' + (rec.d || []).map(function (d) {
+                    // data-n 给 CSS 换骰面用；数字仍然写在标签里，读屏能念出来
+                    return '<span class="dr-die' + (d >= 4 ? ' is-success' : '') +
+                        '" data-n="' + d + '" aria-label="' + d + ' 点">' + d + '</span>';
+                }).join('') + '</div>' +
+                '<div class="dr-summary">' +
+                    '<span>成功</span><b>' + rec.s + '</b>' +
+                    '<span class="dr-total">／ 共 ' + rec.n + ' 颗</span>' +
+                    '<span class="dr-time">' + fmtRollTime(rec.t) + '</span>' +
+                '</div>';
         }
 
         function roll() {
@@ -1307,14 +1814,10 @@
                 dice.push(v);
             }
 
-            output.innerHTML =
-                '<div class="dr-dice">' + dice.map(function (d) {
-                    return '<span class="dr-die' + (d >= 4 ? ' is-success' : '') + '">' + d + '</span>';
-                }).join('') + '</div>' +
-                '<div class="dr-summary">' +
-                    '<span>成功</span><b>' + success + '</b>' +
-                    '<span class="dr-total">／ 共 ' + n + ' 颗</span>' +
-                '</div>';
+            var rec = { t: Date.now(), n: n, d: dice, s: success };
+            renderResult(rec);
+            diceLogWrite([rec].concat(diceLogRead()));
+            renderLog();
         }
 
         box.addEventListener('click', function (e) {
@@ -1323,12 +1826,48 @@
                 input.value = clamp(+input.value + (+step.getAttribute('data-step')));
                 return;
             }
-            if (e.target.closest('#drRoll')) roll();
+            if (e.target.closest('#drRoll')) { roll(); return; }
+
+            var del = e.target.closest('.dr-log-del');
+            if (del) {
+                var rows = diceLogRead();
+                rows.splice(+del.getAttribute('data-i'), 1);
+                diceLogWrite(rows);
+                renderLog();
+                return;
+            }
+
+            if (e.target.closest('#drLogClear')) {
+                // 二次确认：三秒内再点一下才真清空，免得手滑清掉整场记录
+                if (clearTimer) {
+                    diceLogWrite([]);
+                    renderLog();
+                } else {
+                    logClear.textContent = '再点一次确认';
+                    logClear.classList.add('is-armed');
+                    clearTimer = setTimeout(function () {
+                        clearTimer = null;
+                        if (logClear) {
+                            logClear.textContent = '清空';
+                            logClear.classList.remove('is-armed');
+                        }
+                    }, 3000);
+                }
+            }
         });
 
         input.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') { e.preventDefault(); roll(); }
         });
+
+        // 回到这一页：把历史贴回来，顺便把最后一次的结果放回输出区，
+        // 免得记录里明明有、上面却写着「还没掷过」。
+        renderLog();
+        var lastRoll = diceLogRead()[0];
+        if (lastRoll) {
+            renderResult(lastRoll);
+            input.value = clamp(lastRoll.n);
+        }
     }
 
     /* ==========================================================
@@ -1344,6 +1883,56 @@
             target.setAttribute('tabindex', '-1');
             target.focus();
         });
+    }
+
+    /* ==========================================================
+     * 9.5 章节配色 + 页脚插画
+     * ----------------------------------------------------------
+     * 原书每一章都有一条自己的主色（引言灰、世界红、系统青、角色橙……），
+     * 章头色带、小节方块、点状分隔线、表格表头全用这一个色。
+     * 网页上通过给 <body> 挂 data-chapter="02" 来切换，
+     * theme.css 里 body[data-chapter] 一组规则负责把 --ch-* 映射到 --ch。
+     *
+     * 章号直接从路由前两位取（02-system-explained → 02），
+     * 新增章节不用改这里；速查页（dice / typechart / itemprice / icons）
+     * 没有章号，清掉属性即可回落到默认的灰色。
+     * ========================================================== */
+    var CHAPTER_SCENES = {
+        '00': 'scene-market',   // 引言：友好商店与宝可梦中心
+        '01': 'scene-autumn',   // 世界：秋日林道
+        '02': 'scene-forest',   // 系统：双大树下的宝可梦
+        '03': 'scene-town'      // 角色创建：大木研究所
+    };
+
+    function applyChapterTheme(path) {
+        var m = /^(\d{2})-/.exec(path || '');
+        var no = m ? m[1] : '';
+
+        if (no) document.body.setAttribute('data-chapter', no);
+        else document.body.removeAttribute('data-chapter');
+
+        var section = $('.content .markdown-section');
+        if (!section) return;
+
+        // 每次翻页都重建正文，先清掉上一页留下的插画
+        var old = section.querySelector('.chapter-scene');
+        if (old) old.parentNode.removeChild(old);
+
+        var scene = CHAPTER_SCENES[no];
+        if (!scene) return;
+
+        var box = document.createElement('div');
+        box.className = 'chapter-scene';
+        box.setAttribute('aria-hidden', 'true');
+
+        var img = document.createElement('img');
+        img.src = 'assets/img/' + scene + '.webp';
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+
+        box.appendChild(img);
+        section.appendChild(box);
     }
 
     /* ==========================================================
@@ -1421,9 +2010,23 @@
                     convertCallouts();
                     convertDots();
                     decorateTypes();
+                    markSkillTables();
+                    markAttrTables();
+                    markBattleTables();
+                    wrapRankSections();
+                    wrapNatureCards();
+                    wrapBattleCards();
+                    wrapManeuverCards();
+                    buildActTrackers();
+                    wrapPanels();
+                    tintRegions();
+                    fitPortraitFigures();
                     updateBreadcrumbAndNav();
+                    applyChapterTheme(path);
                     buildTOC(vm);
                     initDiceRoller();
+                    initTypeDual();
+                    initTeamChart();
                     if (isMobile()) closeSidebar();
 
                     // 带锚点：等这一帧的布局稳定后再定位，之后一段时间内持续校正
@@ -1436,7 +2039,688 @@
     };
 
     /* ==========================================================
-     * 12. 兼容与打印
+     * 11.5 原书还原层（2026-10-29）
+     * ----------------------------------------------------------
+     * 下面这几个函数都不改正文，只给渲染出来的 DOM「挂类名 / 搬结构」，
+     * 让 theme.css 能把它们画成原书里的样子：
+     *
+     *   markSkillTables()    |点数|效果| 的表 → 胶囊点数条
+     *   wrapRankSections()   ### 新手级：2 → 一张等级卡
+     *   tintRegions()        地区小节标题 → 染上世界地图上的地区色
+     *   fitPortraitFigures() 竖版插图 → 收窄，别撑成巨幅海报
+     *
+     * 之所以放在 JS 而不是改 md：正文保持「能直接读」的干净写法，
+     * 样式要调只改 CSS，不用回头动几十处标记。
+     * ========================================================== */
+
+    /* 社交能力五条的配色（原书 p.24 各一色） */
+    var PIP_TONES = {
+        '强壮': 'tough',
+        '帅气': 'cool',
+        '美丽': 'beauty',
+        '可爱': 'cute',
+        '聪明': 'clever'
+    };
+
+    function markSkillTables() {
+        var root = $('.markdown-section');
+        if (!root) return;
+
+        $$('table', root).forEach(function (tb) {
+            var th = tb.querySelector('thead th');
+            if (!th) return;
+            if (th.textContent.trim() !== '点数') return;
+            if (tb.classList.contains('is-pip')) return;
+            // 必须真的有点数圆点才转。速查台那张「点数 / 档位 / 参考」表
+            // 首列也叫「点数」，但里面是数字不是 {{n}}，转了就变成一排空胶囊。
+            if (!tb.querySelector('.attribute-dots')) return;
+
+            tb.classList.add('is-pip');
+
+            // 往上找最近的三级标题，认它是哪条社交能力
+            var el = tb;
+            while (el && el !== root) {
+                if (/^H[34]$/.test(el.tagName)) {
+                    var tone = PIP_TONES[el.textContent.trim()];
+                    if (tone) tb.setAttribute('data-tone', tone);
+                    break;
+                }
+                el = el.previousElementSibling || el.parentElement;
+            }
+        });
+    }
+
+    /* 八个等级的色带色 + 字色。色值取自《3.0系统详解》p.30–31 的卡片抬头。
+       浅色带（入门/资深/专家/冠军）白字读不清，原书也换成深字，
+       这里按 WCAG 对比度挑，不是随手写的。 */
+    var RANKS = [
+        { re: /^入门级/,  no: 1, ball: 'ch-00-intro',   color: '#a7a9ac', ink: '#2b2b2c' },
+        { re: /^新手级/,  no: 2, ball: 'ball-poke',     color: '#da473f', ink: '#ffffff' },
+        { re: /^正式级/,  no: 3, ball: 'ball-great',    color: '#289ac2', ink: '#ffffff' },
+        { re: /^资深级/,  no: 4, ball: 'ball-ultra',    color: '#fbb040', ink: '#2b2b2c' },
+        { re: /^专家级/,  no: 5, ball: 'ball-dusk',     color: '#6ec49b', ink: '#1e3b2c' },
+        { re: /^精英级/,  no: 6, ball: 'ball-cherish',  color: '#8b5da7', ink: '#ffffff' },
+        { re: /^大师级/,  no: 7, ball: 'ball-master',   color: '#414042', ink: '#ffffff' },
+        { re: /^冠军级/,  no: 8, ball: 'ch-12-spirit',  color: '#29bdbc', ink: '#1c3b3a' }
+    ];
+
+    function rankOf(text) {
+        for (var i = 0; i < RANKS.length; i++) {
+            if (RANKS[i].re.test(text)) return RANKS[i];
+        }
+        return null;
+    }
+
+    function wrapRankSections() {
+        var root = $('.markdown-section');
+        if (!root) return;
+
+        var heads = $$('h3', root).filter(function (h) {
+            return rankOf(h.textContent.trim()) && !h.closest('.rank-card');
+        });
+        if (!heads.length) return;
+
+        heads.forEach(function (h) {
+            var rk = rankOf(h.textContent.trim());
+
+            var card = document.createElement('section');
+            card.className = 'rank-card';
+            card.style.setProperty('--rk', rk.color);
+            card.style.setProperty('--rk-ink', rk.ink);
+
+            h.parentNode.insertBefore(card, h);
+
+            // 把标题和它后面的兄弟节点一起搬进卡片，遇到下一个 h2/h3/h4 就停。
+            // 一定要停在 h4：冠军级后面紧跟一个「宝可梦的等级无法超过其训练家」
+            // 的四级标题，不停的话它和后面几段会被一起卷进卡片里。
+            var node = h;
+            while (node) {
+                var next = node.nextElementSibling;
+                card.appendChild(node);
+                if (!next) break;
+                if (/^H[234]$/.test(next.tagName)) break;
+                node = next;
+            }
+
+            // 等级球做成真 <img> 而不是 ::after 的背景图：
+            // 自定义属性里的 url() 会被解析成相对 theme.css 的路径，
+            // 放到 <img> 上就没有这个坑。
+            var ball = document.createElement('img');
+            ball.className = 'rank-ball';
+            ball.src = 'assets/img/' + rk.ball + '.webp';
+            ball.alt = '';
+            ball.width = 30;
+            ball.height = 30;
+            h.insertBefore(ball, h.firstChild);
+
+            // 「入门级：1」→ 标题只留名字，数字挪到右上角的方块里
+            var span = h.querySelector('.anchor span') || h.querySelector('span');
+            if (span) span.textContent = span.textContent.replace(/[：:]\s*\d+\s*$/, '');
+
+            var no = document.createElement('span');
+            no.className = 'rank-no';
+            no.textContent = rk.no;
+            h.appendChild(no);
+        });
+
+        // 把连在一起的等级卡包进一个两列的网格
+        var cards = $$('.markdown-section > .rank-card', root);
+        if (!cards.length) return;
+
+        var grid = document.createElement('div');
+        grid.className = 'rank-grid';
+        cards[0].parentNode.insertBefore(grid, cards[0]);
+        cards.forEach(function (c) { grid.appendChild(c); });
+    }
+
+    /* 世界地图上九个地区的颜色，直接采自 assets/img/world-map.webp */
+    var REGION_COLORS = {
+        '关都': '#b0b250',
+        '城都': '#795753',
+        '丰缘': '#5b907e',
+        '神奥': '#6e838c',
+        '合众': '#aaaaa1',
+        '卡洛斯': '#848567',
+        '阿罗拉': '#e6ad5a',
+        '伽勒尔': '#5c9dae',
+        '帕底亚': '#b15751'
+    };
+
+    function tintRegions() {
+        var root = $('.markdown-section');
+        if (!root) return;
+
+        $$('h3', root).forEach(function (h) {
+            var name = h.textContent.trim().replace(/地区$/, '');
+            var c = REGION_COLORS[name];
+            if (!c) return;
+            h.setAttribute('data-region', name);
+            h.style.setProperty('--rc', c);
+            // 字用压深一档的同色，浅色（阿罗拉那种橙）才读得清
+            h.style.setProperty('--rc-deep', 'color-mix(in srgb, ' + c + ' 72%, #000)');
+        });
+    }
+
+    /* 有些表中间那一列只放两三个字（属性、稀有、产地、场地），
+       在 width:100% 下会被拉成最宽的一列。按**第二列的表头**认出来，
+       挂上类名让 CSS 改成按内容收缩。 */
+    var NARROW_BY_2ND = {
+        '属性': 'is-attr',
+        '稀有': 'is-berry',
+        '产地': 'is-berry',
+        '场地': 'is-berry',
+        '价格': 'is-price',
+        '售价': 'is-price'
+    };
+
+    function markAttrTables() {
+        var root = $('.markdown-section');
+        if (!root) return;
+        $$('table', root).forEach(function (tb) {
+            var ths = tb.querySelectorAll('thead th');
+            if (ths.length < 2) return;   // 「道具 | 属性」是两列，不能要求三列
+            var cls = NARROW_BY_2ND[ths[1].textContent.trim()];
+            if (cls) tb.classList.add(cls);
+        });
+    }
+
+    function fitPortraitFigures() {
+        var root = $('.markdown-section');
+        if (!root) return;
+
+        $$('p > img', root).forEach(function (img) {
+            if (img.classList.contains('ball-icon') || img.classList.contains('mv-icon') ||
+                img.classList.contains('item-icon') || img.classList.contains('rank-icon') ||
+                img.classList.contains('world-icon') || img.classList.contains('mv-icon-lg')) return;
+
+            function apply() {
+                if (!img.naturalWidth || !img.naturalHeight) return;
+                if (img.naturalHeight / img.naturalWidth > 1.12) {
+                    img.classList.add('is-portrait');
+                }
+            }
+            if (img.complete) apply();
+            else img.addEventListener('load', apply, { once: true });
+        });
+    }
+
+    /* 「开团速查台」整页包成一块块面板。
+       只在 H1 是「开团速查台」的页面上生效，别的章节不受影响。
+       每个 H2 连同它后面的内容包成一张 .gm-panel，再塞进 .gm-screen 网格。 */
+    function wrapPanels() {
+        var root = $('.markdown-section');
+        if (!root) return;
+
+        var h1 = root.querySelector('h1');
+        if (!h1 || h1.textContent.indexOf('开团速查台') === -1) return;
+        if (root.querySelector('.gm-screen')) return;   // 已经包过就别再包一层
+
+        var heads = $$('h2', root);
+        if (!heads.length) return;
+
+        var screen = document.createElement('div');
+        screen.className = 'gm-screen';
+        heads[0].parentNode.insertBefore(screen, heads[0]);
+
+        heads.forEach(function (h) {
+            // 先把「标题 + 后面的兄弟节点」收成一个数组，再一次性搬进面板。
+            // 一边搬一边找 nextElementSibling 是不行的——节点一移走，链就断了。
+            var nodes = [h];
+            var node = h;
+            while (true) {
+                var next = node.nextElementSibling;
+                if (!next || next.tagName === 'H2' || next.tagName === 'H1') break;
+                nodes.push(next);
+                node = next;
+            }
+
+            var panel = document.createElement('section');
+            panel.className = 'gm-panel';
+            nodes.forEach(function (n) { panel.appendChild(n); });
+            screen.appendChild(panel);
+        });
+    }
+
+    /* 「性格」一节在原书 p.44–47 是**两列卡片**：
+       橙色名字条（名字居中）+ 深灰特质条（斜体白字）+ 正文。
+       正文还是 `### 固执 Adamant` + 一段粗体特质 + 若干段落，
+       这里按英文性格名认出来，包成卡片。 */
+    var NATURES = [
+        'Adamant', 'Bashful', 'Bold', 'Brave', 'Calm', 'Careful', 'Docile',
+        'Gentle', 'Hardy', 'Hasty', 'Impish', 'Jolly', 'Lax', 'Lonely', 'Mild',
+        'Modest', 'Naive', 'Naughty', 'Quiet', 'Quirky', 'Rash', 'Relaxed',
+        'Sassy', 'Serious', 'Timid'
+    ];
+
+    /* 只有粗体、没有别的内容的段落 —— 用来认「特质」那一行 */
+    function isBoldOnly(p) {
+        if (!p || p.tagName !== 'P') return false;
+        var kids = Array.prototype.filter.call(p.childNodes, function (n) {
+            return n.nodeType === 1 || (n.nodeType === 3 && n.nodeValue.trim());
+        });
+        return kids.length === 1 && kids[0].tagName === 'STRONG';
+    }
+
+    function wrapNatureCards() {
+        var root = $('.markdown-section');
+        if (!root) return;
+        if (root.querySelector('.nature-grid')) return;   // 已经包过
+
+        var heads = $$('h3', root).filter(function (h) {
+            var t = h.textContent.trim();
+            var m = t.match(/\s([A-Za-z]+)\s*$/);
+            return m && NATURES.indexOf(m[1]) >= 0 && !h.closest('.nature-card');
+        });
+        if (!heads.length) return;
+
+        heads.forEach(function (h) {
+            var m = h.textContent.trim().match(/^(.*?)\s+([A-Za-z]+)\s*$/);
+
+            // 先把「标题后面的兄弟节点」收成数组，再动手搬。
+            // 一旦把 h 挪进卡片，h.nextElementSibling 就断了，边搬边找会拿到 null。
+            var nodes = [];
+            var node = h;
+            var seenTraits = false;
+            while (true) {
+                var next = node.nextElementSibling;
+                if (!next) break;
+                if (/^H[1-4]$/.test(next.tagName)) break;
+                if (isBoldOnly(next)) {
+                    // 第一段粗体是特质条；再遇到一段粗体就是收尾句，卡片到此为止
+                    if (seenTraits) break;
+                    seenTraits = true;
+                }
+                nodes.push(next);
+                node = next;
+            }
+
+            var card = document.createElement('section');
+            card.className = 'nature-card';
+            h.parentNode.insertBefore(card, h);
+            card.appendChild(h);
+
+            // 名字拆成「中文 + 英文」，英文用小字排在后面
+            var span = h.querySelector('.anchor span') || h.querySelector('span');
+            if (span && m) {
+                span.innerHTML = '<span class="nc-zh">' + m[1] +
+                    '</span><span class="nc-en">' + m[2] + '</span>';
+            }
+
+            nodes.forEach(function (n) {
+                if (isBoldOnly(n)) {
+                    var bar = document.createElement('div');
+                    bar.className = 'nc-traits';
+                    bar.textContent = n.textContent.trim();
+                    card.appendChild(bar);
+                    n.parentNode.removeChild(n);
+                } else {
+                    card.appendChild(n);
+                }
+            });
+        });
+
+        var cards = $$('.markdown-section > .nature-card', root);
+        if (!cards.length) return;
+        var grid = document.createElement('div');
+        grid.className = 'nature-grid';
+        cards[0].parentNode.insertBefore(grid, cards[0]);
+        cards.forEach(function (c) { grid.appendChild(c); });
+    }
+
+    /* ==========================================================
+     * 11.7 第四章「宝可梦对战」的卡片（2026-10-29）
+     * ----------------------------------------------------------
+     * 原书这一章有三种彩色卡：异常状态（p.84–85）、天气（p.88–90）、
+     * 环境挑战（p.90–91）。三者的骨架一样：
+     *
+     *     ### 名称
+     *     *一行副题*          ← 状态卡的「固定型 / 恶化型 / 易变型」
+     *     正文……
+     *
+     * 正文里写的是能直接读的普通段落，这里把它们搬进卡片、挂上类名。
+     * 标题仍然是真标题，右侧目录和锚点不受影响。
+     * 配色逐张从 PDF 采样，值写在下面三张表里，别凭感觉调。
+     * ========================================================== */
+
+    /* 异常状态（p.84–85） */
+    var STATUS_TONES = {
+        '1级灼伤': { c: '#f05a22', ink: '#fff' },
+        '2级灼伤': { c: '#c5351b', ink: '#fff' },
+        '3级灼伤': { c: '#9e1b0e', ink: '#fff' },
+        '混乱': { c: '#00b27c', ink: '#fff' },
+        '定身法': { c: '#282829', ink: '#fff' },
+        '麻痹': { c: '#eddb00', ink: '#3a3300' },
+        '畏缩': { c: '#555d69', ink: '#fff' },
+        '冰冻': { c: '#87d1d1', ink: '#12403f' },
+        '着迷': { c: '#f05a7d', ink: '#fff' },
+        '中毒': { c: '#956597', ink: '#fff' },
+        '剧毒': { c: '#774386', ink: '#fff' },
+        '睡眠': { c: '#b4b68b', ink: '#33361f' }
+    };
+
+    /* 天气（p.88–90），图标沿用招式简介册 p.439 那套 wx-* */
+    var WEATHER_TONES = {
+        '大晴天': { c: '#5acbf5', ink: '#12455c', icon: 'sunny' },
+        '下雨': { c: '#6aa2bb', ink: '#fff', icon: 'rain' },
+        '沙暴': { c: '#9d9273', ink: '#fff', icon: 'sandstorm' },
+        '下雪': { c: '#256290', ink: '#fff', icon: 'snow' },
+        '冰雹': { c: '#71c5ee', ink: '#123b52', icon: 'hail' },
+        '大日照': { c: '#f47c2e', ink: '#fff', icon: 'desolate' },
+        '大雨': { c: '#03242b', ink: '#fff', icon: 'typhoon' },
+        '乱流': { c: '#5acbf5', ink: '#12455c', icon: 'wind' }
+    };
+
+    /* 环境挑战（p.90–91） */
+    var ENV_TONES = {
+        '浓雾/黑暗': { c: '#282829', ink: '#fff' },
+        '泥泞': { c: '#82504f', ink: '#fff' },
+        '水下': { c: '#0074bb', ink: '#fff' },
+        '烈焰熊熊！': { c: '#d05121', ink: '#fff' },
+        '电气柱': { c: '#be9b19', ink: '#fff' },
+        '花团锦簇': { c: '#f17bb0', ink: '#fff' },
+        '下水道/垃圾堆': { c: '#8462a1', ink: '#fff' },
+        '丛林深处': { c: '#68a34a', ink: '#fff' },
+        '踩高跷': { c: '#7caec6', ink: '#1b3c4a' },
+        '洒水器': { c: '#00addd', ink: '#fff' },
+        '宝可梦墓地': { c: '#5e67af', ink: '#fff' },
+        '雷区': { c: '#a67244', ink: '#fff' },
+        '治愈伤口': { c: '#e45687', ink: '#fff' },
+        '毁坏的世界': { c: '#4e4663', ink: '#fff' },
+        '终点': { c: '#bc4dad', ink: '#fff' }
+    };
+
+    /* 「异常效果」「解决方案 & 持续时间」这类小标题带 */
+    function isCardBand(el) {
+        if (!el || el.tagName !== 'P') return false;
+        var t = el.textContent.replace(/\s+/g, ' ').trim();
+        return t === '异常效果' || t === '状态效果' ||
+            t === '解决方案 & 持续时间' || t === '解决方案&持续时间';
+    }
+
+    /* 副题行：整段只有一个 <em> */
+    function isEmOnly(el) {
+        if (!el || el.tagName !== 'P') return false;
+        if (el.children.length !== 1 || el.children[0].tagName !== 'EM') return false;
+        return el.textContent.trim().length > 0;
+    }
+
+    function wrapOneCard(h, tones, cls, toneVar, inkVar) {
+        var tone = tones[h.textContent.trim()];
+        if (!tone) return null;
+
+        var card = document.createElement('section');
+        card.className = cls;
+        card.style.setProperty(toneVar, tone.c);
+        card.style.setProperty(inkVar, tone.ink || '#fff');
+
+        h.parentNode.insertBefore(card, h);
+
+        // 先把兄弟节点收成数组再搬——边搬边取 nextElementSibling 会拿到 null
+        var nodes = [h];
+        var node = h;
+        while (true) {
+            var next = node.nextElementSibling;
+            if (!next) break;
+            if (/^H[1-4]$/.test(next.tagName)) break;
+            nodes.push(next);
+            node = next;
+        }
+        nodes.forEach(function (n) { card.appendChild(n); });
+
+        // 副题（第一段只有 <em> 的）→ .sc-type
+        var typeEl = null;
+        var kids = Array.prototype.slice.call(card.children);
+        for (var i = 0; i < kids.length; i++) {
+            if (isEmOnly(kids[i])) { typeEl = kids[i]; break; }
+        }
+        if (typeEl) typeEl.classList.add('sc-type');
+
+        // 状态卡再多一段风味描述（副题后面那段普通段落）
+        if (cls === 'status-card' && typeEl && typeEl.nextElementSibling &&
+            typeEl.nextElementSibling.tagName === 'P') {
+            typeEl.nextElementSibling.classList.add('sc-flavor');
+        }
+        // 天气卡的描述条同理
+        if (cls === 'weather-card' && typeEl && typeEl.nextElementSibling &&
+            typeEl.nextElementSibling.tagName === 'P') {
+            typeEl.nextElementSibling.classList.add('wc-desc');
+        }
+
+        // 天气卡：抬头左边放一枚天气图标
+        if (tone.icon) {
+            var plate = document.createElement('span');
+            plate.className = 'wc-ico';
+            plate.innerHTML = '<poke-icon class="wx ' + tone.icon + '"></poke-icon>';
+            h.insertBefore(plate, h.firstChild);
+        }
+
+        // 状态卡：把「异常效果 / 解决方案 & 持续时间」拆成色带 + 正文块
+        if (cls === 'status-card') buildCardBlocks(card);
+
+        return card;
+    }
+
+    function buildCardBlocks(card) {
+        var anchor = card.querySelector('.sc-flavor') || card.querySelector('.sc-type') ||
+            card.querySelector('h3');
+        if (!anchor) return;
+
+        var cur = anchor.nextElementSibling;
+        while (cur) {
+            if (isCardBand(cur)) {
+                var block = document.createElement('div');
+                block.className = 'sc-block';
+                card.insertBefore(block, cur);
+
+                var band = document.createElement('div');
+                band.className = 'sc-band';
+                band.textContent = cur.textContent.replace(/\s+/g, ' ').trim();
+                block.appendChild(band);
+
+                var body = document.createElement('div');
+                body.className = 'sc-body';
+                block.appendChild(body);
+
+                cur.parentNode.removeChild(cur);
+
+                var nx = block.nextElementSibling;
+                while (nx && !isCardBand(nx)) {
+                    var after = nx.nextElementSibling;
+                    body.appendChild(nx);
+                    nx = after;
+                }
+                cur = block.nextElementSibling;
+            } else {
+                cur = cur.nextElementSibling;
+            }
+        }
+    }
+
+    function wrapBattleCards() {
+        var root = $('.markdown-section');
+        if (!root) return;
+
+        var groups = [
+            { tones: STATUS_TONES, cls: 'status-card', grid: 'status-grid', v: '--sc', ink: '--sc-ink' },
+            { tones: WEATHER_TONES, cls: 'weather-card', grid: null, v: '--wc', ink: '--wc-ink' },
+            { tones: ENV_TONES, cls: 'env-card', grid: 'env-grid', v: '--ec', ink: '--ec-ink' }
+        ];
+
+        groups.forEach(function (g) {
+            var heads = $$('h3', root).filter(function (h) {
+                return g.tones[h.textContent.trim()] && !h.closest('.' + g.cls);
+            });
+            if (!heads.length) return;
+
+            var made = [];
+            heads.forEach(function (h) {
+                var c = wrapOneCard(h, g.tones, g.cls, g.v, g.ink);
+                if (c) made.push(c);
+            });
+
+            if (!g.grid || !made.length) return;
+            var grid = document.createElement('div');
+            grid.className = g.grid;
+            made[0].parentNode.insertBefore(grid, made[0]);
+            made.forEach(function (c) { grid.appendChild(c); });
+        });
+
+        wrapTipsPanel(root);
+    }
+
+    /* 「成功战斗10大要诀」：原书是一整块绿色面板，两栏编号条目。
+       正文里标题下面紧跟一个 .tips-list，这里把两者包成一块面板。 */
+    function wrapTipsPanel(root) {
+        $$('h2', root).forEach(function (h) {
+            if (h.textContent.trim().indexOf('成功战斗') !== 0) return;
+            var list = h.nextElementSibling;
+            if (!list || !list.classList.contains('tips-list')) return;
+            if (h.closest('.tips-panel')) return;
+
+            var panel = document.createElement('section');
+            panel.className = 'tips-panel';
+            h.parentNode.insertBefore(panel, h);
+            panel.appendChild(h);
+            panel.appendChild(list);
+        });
+    }
+
+    /* 冲抵 & 闪避：原书 p.70 是左右两张绿卡。
+       正文里仍是两个真 h3，这里把标题和后面的兄弟节点包成一张卡，
+       再把两张卡塞进 .maneuver-grid。锚点和右侧目录照旧。 */
+    function wrapManeuverCards() {
+        var root = $('.markdown-section');
+        if (!root) return;
+        if (root.querySelector('.maneuver-grid')) return;
+
+        var heads = $$('h3', root).filter(function (h) {
+            var t = h.textContent.trim();
+            return (t === '冲抵' || t === '闪避') && !h.closest('.maneuver-card');
+        });
+        if (heads.length !== 2) return;
+
+        var cards = heads.map(function (h) {
+            var card = document.createElement('section');
+            card.className = 'maneuver-card';
+            h.parentNode.insertBefore(card, h);
+
+            var nodes = [h];
+            var node = h;
+            while (true) {
+                var next = node.nextElementSibling;
+                if (!next) break;
+                if (/^H[1-4]$/.test(next.tagName)) break;
+                if (next.classList && next.classList.contains('mn-end')) break;
+                nodes.push(next);
+                node = next;
+            }
+            nodes.forEach(function (n) { card.appendChild(n); });
+            return card;
+        });
+
+        var grid = document.createElement('div');
+        grid.className = 'maneuver-grid';
+        cards[0].parentNode.insertBefore(grid, cards[0]);
+        cards.forEach(function (c) { grid.appendChild(c); });
+    }
+
+    /* 动作条（原书 p.54 的 Actions Used）：
+       <span class="act-tracker" data-n="1" data-label="伊布"></span>
+       5 个格子，前 n 个填满。写 md 时只给数字，格子在这里生成。 */
+    function buildActTrackers() {
+        var root = $('.markdown-section');
+        if (!root) return;
+        $$('.act-tracker', root).forEach(function (el) {
+            if (el.getAttribute('data-built')) return;
+            var n = parseInt(el.getAttribute('data-n') || '0', 10);
+            var label = el.getAttribute('data-label') || '';
+            el.innerHTML = '';
+            if (label) {
+                var s = document.createElement('span');
+                s.className = 'at-label';
+                s.textContent = label;
+                el.appendChild(s);
+            }
+            for (var i = 0; i < 5; i++) {
+                var b = document.createElement('i');
+                if (i < n) b.className = 'on';
+                el.appendChild(b);
+            }
+            el.setAttribute('data-built', '1');
+        });
+    }
+
+    /* 第四章的两张属性表：属性总表（2 列）和防御相克表（4 列）。
+       表头第 1 格都是「属性」，靠列数区分，别靠表头文字。 */
+    function markBattleTables() {
+        var root = $('.markdown-section');
+        if (!root) return;
+        $$('table', root).forEach(function (tb) {
+            var ths = tb.querySelectorAll('thead th');
+            if (!ths.length) return;
+            if (ths[0].textContent.trim() !== '属性') return;
+            if (ths.length >= 4) tb.classList.add('is-typechart');
+            else if (ths.length === 2) tb.classList.add('is-typeline');
+        });
+    }
+
+    /* ==========================================================
+     * 12. 图片放大（点击正文插图全屏看）
+     * ----------------------------------------------------------
+     * 用原生 <dialog>，不引任何第三方库：Esc 关闭、点背景关闭都是
+     * 浏览器自带的行为。行内小图标（球、队徽）不参与——它们贴着字
+     * 当装饰用，放大没有意义。
+     * ========================================================== */
+    var zoomDialog = null;
+
+    function ensureZoomDialog() {
+        if (zoomDialog) return zoomDialog;
+        var dlg = document.createElement('dialog');
+        dlg.className = 'img-zoom';
+
+        var img = document.createElement('img');
+        img.alt = '';
+        dlg.appendChild(img);
+
+        var tip = document.createElement('span');
+        tip.className = 'img-zoom-tip';
+        tip.textContent = '点击空白处或按 Esc 关闭';
+        dlg.appendChild(tip);
+
+        // 点背景关闭；点图片本身不关，方便对着细节看
+        dlg.addEventListener('click', function (e) {
+            if (e.target !== img) dlg.close();
+        });
+
+        document.body.appendChild(dlg);
+        zoomDialog = dlg;
+        return dlg;
+    }
+
+    function bindImageZoom() {
+        document.addEventListener('click', function (e) {
+            var img = e.target;
+            if (!img || img.tagName !== 'IMG') return;
+            if (!img.closest('.markdown-section')) return;          // 只管正文
+            if (img.classList.contains('ball-icon')) return;        // 行内图标不算
+            if (img.classList.contains('rank-icon')) return;        // 等级球同理
+            if (img.classList.contains('item-icon')) return;
+            if (img.classList.contains('world-icon')) return;
+            if (img.classList.contains('mv-icon')) return;
+            if (img.classList.contains('mv-icon-lg')) return;
+            if (img.closest('a')) return;                           // 已经是链接的交给链接
+
+            var dlg = ensureZoomDialog();
+            var big = dlg.querySelector('img');
+            big.src = img.currentSrc || img.src;
+            big.alt = img.alt || '';
+            e.preventDefault();
+            if (dlg.showModal) dlg.showModal();
+        });
+    }
+
+    /* ==========================================================
+     * 13. 兼容与打印
      * ========================================================== */
     // 打印 / 导出 PDF 前展开所有折叠块，打印完再收回去
     var openedForPrint = [];
@@ -1457,7 +2741,7 @@
     }
 
     /* ==========================================================
-     * 13. 启动
+     * 14. 启动
      * ========================================================== */
     function boot() {
         bindSkipLink();
@@ -1466,6 +2750,7 @@
         bindSearch();
         bindPrintExpand();
         bindTOCScrollSpy();
+        bindImageZoom();
         ensureTooltip();
         ensureTOC();
 

@@ -1,10 +1,10 @@
-# 引言
+# <img class="title-icon" src="assets/img/ch-00-intro.webp" width="27" height="27" alt="">引言
 
 欢迎来到《宝可梦：角色扮演游戏》！这本规则书将帮助你构建属于自己的故事，让你以从未想象过的方式使角色和宝可梦变得生动鲜活。
 
-### 什么是“角色扮演游戏”？;
+### 什么是“角色扮演游戏”？
 
-角色扮演游戏与在戏剧表演中担任演员差不多。;
+角色扮演游戏与在戏剧表演中担任演员差不多。
 
 想象一下你小时候玩玩具的时候：你拿起一个玩偶或模型，然后借你之口让它们“说话”，想象它们经历一切荒唐而又精彩的冒险。
 
@@ -53,3 +53,13 @@
 最后一个你要用到的工具是骰子。  
 
 普通的六面骰就足够了。你在游戏之中的命运将由角色的能力——以及一点点骰运决定。 
+
+<div class="dice-showcase">
+    <span class="die" data-n="1"></span>
+    <span class="die" data-n="2"></span>
+    <span class="die" data-n="3"></span>
+    <span class="die" data-n="4"></span>
+    <span class="die" data-n="5"></span>
+    <span class="die" data-n="6"></span>
+    <span class="dc-caption">六面骰（D6）· 全书只用这一种骰子</span>
+</div>

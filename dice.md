@@ -2,9 +2,9 @@
 
 > [!tip] 怎么用
 > 填入骰池大小，点「掷骰」。
-> **4、5、6 各算一个成功**；1、2、3 只是没成功，没有额外惩罚。
+> **4、5、6 各算一个成功**；1、2、3可以无视，除非启动劲敌能力，否则没有额外惩罚。
 >
-> 骰池通常等于 **能力值 + 技能**，具体见[系统详解](02-system-explained.md)里的掷骰机制。
+> 骰池通常等于 **能力值 + 技能**，具体见[掷骰机制](02-system-explained.md#掷骰机制)。
 
 <div class="dice-roller" id="diceRoller">
   <div class="dr-controls">
@@ -18,14 +18,23 @@
   <div class="dr-output" id="drOutput" role="status" aria-live="polite">
     <p class="dr-idle">还没掷过。设定好骰池后点「掷骰」。</p>
   </div>
+  <section class="dr-log" id="drLog" aria-label="掷骰记录" hidden>
+    <div class="dr-log-head">
+      <span class="dr-log-title">掷骰记录</span>
+      <span class="dr-log-meta" id="drLogMeta"></span>
+      <button class="dr-log-clear" id="drLogClear" type="button">清空</button>
+    </div>
+    <ol class="dr-log-list" id="drLogList"></ol>
+  </section>
 </div>
 
 ---
 
 ## 结果怎么看
 
-- 每一格是一个六面骰的点数，**红色格子**就是成功骰。
+- 每一格是一颗六面骰的点数，**红底那颗**就是成功骰。
 - 下方「成功 N ／ 共 M 颗」是本轮的合计。
+- 掷过的结果会自动记在下面的「掷骰记录」里，带时间、每颗点数和成功数，**只存在这台设备的浏览器里**（而且清缓存就没了）。
 
 ## 常见判定
 
@@ -39,8 +48,8 @@
 
 |多重行动|所需成功数|难度等级|
 |:---:|:---:|:---:|
-| 行动 1 | 1 | 棘手 |
-| 行动 2 | 2 | 挑战 |
-| 行动 3 | 3 | 困难 |
-| 行动 4 | 4 | 极难 |
-| 行动 5 | 5 | 近乎不可能 |
+| 行动1 | 1 | 棘手 |
+| 行动2 | 2 | 挑战 |
+| 行动3 | 3 | 困难 |
+| 行动4 | 4 | 极难 |
+| 行动5 | 5 | 近乎不可能 |
